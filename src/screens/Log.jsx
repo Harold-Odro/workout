@@ -3,16 +3,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Button from '../components/Button.jsx';
 import { WORKOUT_META } from '../lib/workouts.js';
 import { formatDuration } from '../lib/time.js';
-import { saveSession } from '../lib/storage.js';
-
-const RPE_LABELS = {
-  1: 'Easy',
-  3: 'Light',
-  5: 'Moderate',
-  7: 'Hard',
-  9: 'Very hard',
-  10: 'Max effort',
-};
+import { saveSession, updateSession } from '../lib/storage.js';
 
 function rpeDescriptor(v) {
   if (v <= 2) return 'Easy';
@@ -27,35 +18,43 @@ export default function Log({ setToast }) {
   const location = useLocation();
   const navigate = useNavigate();
   const draft = location.state?.draft;
+  const editingId = location.state?.editingId || null;
 
   if (!draft) return <Navigate to="/" replace />;
 
   const meta = WORKOUT_META[draft.type];
 
   const [completedRounds, setCompletedRounds] = useState(draft.completedRounds);
-  const [rpe, setRpe] = useState(6);
-  const [notes, setNotes] = useState('');
+  const [rpe, setRpe] = useState(typeof draft.rpe === 'number' ? draft.rpe : 6);
+  const [notes, setNotes] = useState(draft.notes || '');
 
   function handleSave() {
-    saveSession({
-      ...draft,
+    const patch = {
       completedRounds: Number(completedRounds) || 0,
       rpe: Number(rpe),
       notes: notes.trim(),
-    });
+    };
+    if (editingId) {
+      updateSession(editingId, patch);
+      setToast?.(`${meta?.name || 'Workout'} updated.`);
+      navigate(`/session/${editingId}`, { replace: true });
+      return;
+    }
+    saveSession({ ...draft, ...patch });
     setToast?.(`${meta?.name || 'Workout'} saved.`);
     navigate('/', { replace: true });
   }
 
   function handleDiscard() {
-    navigate('/', { replace: true });
+    if (editingId) navigate(`/session/${editingId}`, { replace: true });
+    else navigate('/', { replace: true });
   }
 
   return (
     <div className="min-h-full pt-safe pb-10">
       <header className="px-5 pt-6 pb-4">
         <div className="text-xs uppercase tracking-widest text-green-500">
-          Workout complete
+          {editingId ? 'Edit session' : 'Workout complete'}
         </div>
         <h1 className="mt-1 text-2xl font-semibold text-neutral-100">
           {meta?.name || draft.type}
@@ -116,8 +115,8 @@ export default function Log({ setToast }) {
             className="w-full accent-green-500 h-2"
           />
           <div className="mt-1 flex justify-between text-xs text-neutral-500">
-            <span>{RPE_LABELS[1]}</span>
-            <span>{RPE_LABELS[10]}</span>
+            <span>Easy</span>
+            <span>Max effort</span>
           </div>
         </div>
 
@@ -137,14 +136,14 @@ export default function Log({ setToast }) {
 
         <div className="pt-2">
           <Button type="submit" variant="primary" size="lg" className="w-full">
-            Save session
+            {editingId ? 'Save changes' : 'Save session'}
           </Button>
           <button
             type="button"
             onClick={handleDiscard}
             className="mt-4 w-full text-sm text-neutral-500 hover:text-neutral-300 py-2"
           >
-            Discard
+            {editingId ? 'Cancel' : 'Discard'}
           </button>
         </div>
       </form>

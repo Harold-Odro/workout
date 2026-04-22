@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom';
-import { Home, History, CalendarRange } from 'lucide-react';
+import { Home, History, LineChart, CalendarRange } from 'lucide-react';
 
 const TABS = [
-  { to: '/',        label: 'Today',   Icon: Home },
-  { to: '/history', label: 'History', Icon: History },
-  { to: '/plan',    label: 'Plan',    Icon: CalendarRange },
+  { to: '/',         label: 'Today',    Icon: Home },
+  { to: '/history',  label: 'History',  Icon: History },
+  { to: '/progress', label: 'Progress', Icon: LineChart },
+  { to: '/plan',     label: 'Plan',     Icon: CalendarRange },
 ];
 
 export default function BottomNav() {
@@ -22,7 +23,7 @@ export default function BottomNav() {
               className={({ isActive }) =>
                 [
                   'flex flex-col items-center justify-center gap-1',
-                  'min-h-[64px] py-2 text-xs',
+                  'min-h-16 py-2 text-xs',
                   isActive ? 'text-green-500' : 'text-neutral-500',
                   'focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-inset',
                 ].join(' ')

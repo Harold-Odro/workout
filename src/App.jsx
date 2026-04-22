@@ -1,11 +1,15 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import BottomNav from './components/BottomNav.jsx';
 import Today from './screens/Today.jsx';
 import Workout from './screens/Workout.jsx';
 import Log from './screens/Log.jsx';
 import History from './screens/History.jsx';
+import SessionDetail from './screens/SessionDetail.jsx';
 import Plan from './screens/Plan.jsx';
+
+// Progress pulls in Recharts — lazy-load so it doesn't bloat the main bundle.
+const Progress = lazy(() => import('./screens/Progress.jsx'));
 
 const FULLSCREEN_ROUTES = ['/workout', '/log'];
 
@@ -32,10 +36,28 @@ export default function App() {
         <Route path="/workout" element={<Workout />} />
         <Route path="/log" element={<Log setToast={setToast} />} />
         <Route path="/history" element={<History />} />
+        <Route path="/session/:id" element={<SessionDetail />} />
+        <Route
+          path="/progress"
+          element={
+            <Suspense fallback={<ProgressLoading />}>
+              <Progress />
+            </Suspense>
+          }
+        />
         <Route path="/plan" element={<Plan />} />
         <Route path="*" element={<Today toast={toast} />} />
       </Routes>
       {showNav ? <BottomNav /> : null}
+    </div>
+  );
+}
+
+function ProgressLoading() {
+  return (
+    <div className="min-h-full pt-safe pb-24 px-5 pt-10">
+      <h1 className="text-2xl font-semibold text-neutral-100">Progress</h1>
+      <p className="mt-2 text-sm text-neutral-500">Loading…</p>
     </div>
   );
 }
