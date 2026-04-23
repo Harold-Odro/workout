@@ -1,0 +1,242 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { X } from 'lucide-react';
+import ExerciseIntro from '../components/ExerciseIntro.jsx';
+import SetLogger from '../components/SetLogger.jsx';
+import UnilateralSetLogger from '../components/UnilateralSetLogger.jsx';
+import RestTimer from '../components/RestTimer.jsx';
+import SkipPhaseRunner from '../components/SkipPhaseRunner.jsx';
+import Button from '../components/Button.jsx';
+import { PPL_META, getPPLWorkout } from '../lib/workoutsPPL.js';
+import {
+  getExerciseLevels,
+  getPPLSettings,
+  getSettings,
+  saveSession,
+} from '../lib/storage.js';
+import { useStrengthEngine } from '../hooks/useStrengthEngine.js';
+import { useWakeLock } from '../hooks/useWakeLock.js';
+
+export default function PPLWorkoutFlow({ type }) {
+  const navigate = useNavigate();
+  const [settings] = useState(() => getSettings());
+  const pplSettings = useMemo(() => getPPLSettings(), []);
+  const exerciseLevels = useMemo(() => getExerciseLevels(), []);
+  const workout = useMemo(
+    () => getPPLWorkout(type, { exerciseLevels }),
+    [type, exerciseLevels]
+  );
+
+  const [confirmExit, setConfirmExit] = useState(false);
+  const startedAtRef = useRef(Date.now());
+  const routedRef = useRef(false);
+
+  const engine = useStrengthEngine(workout, {
+    defaultWeightKg: pplSettings.defaultWeightKg,
+  });
+
+  useWakeLock(!engine.isDone);
+
+  function routeToLog() {
+    if (routedRef.current) return;
+    routedRef.current = true;
+    const finisherBlockIds = workout.blocks
+      .map((b, idx) => (b.kind === 'finisher' || b.kind === 'circuit' ? idx : null))
+      .filter((x) => x !== null);
+    const allFinishersDone =
+      finisherBlockIds.length === 0
+        ? null
+        : finisherBlockIds.every((idx) => engine.finisherCompleted[idx]);
+    const draft = {
+      program: 'ppl',
+      date: new Date().toISOString().slice(0, 10),
+      startedAt: new Date(startedAtRef.current).toISOString(),
+      type,
+      durationSeconds: Math.round((Date.now() - startedAtRef.current) / 1000),
+      skipped: false,
+      exercises: Object.values(engine.logged),
+      finisherCompleted: allFinishersDone,
+    };
+    navigate('/log', { replace: true, state: { draft } });
+  }
+
+  useEffect(() => {
+    if (engine.isDone) routeToLog();
+  }, [engine.isDone]);
+
+  function handleExit() {
+    if (engine.isDone) {
+      routeToLog();
+      return;
+    }
+    setConfirmExit(true);
+  }
+
+  function exitWithoutSaving() {
+    navigate('/', { replace: true });
+  }
+
+  function saveAsSkipped() {
+    saveSession({
+      program: 'ppl',
+      date: new Date().toISOString().slice(0, 10),
+      startedAt: new Date(startedAtRef.current).toISOString(),
+      type,
+      durationSeconds: Math.round((Date.now() - startedAtRef.current) / 1000),
+      rpe: 0,
+      notes: '',
+      skipped: true,
+      exercises: Object.values(engine.logged),
+      finisherCompleted: false,
+    });
+    navigate('/', { replace: true });
+  }
+
+  const block = engine.block;
+  const exercise = engine.exercise;
+  const lastEntry = exercise ? engine.lastEntry(exercise.id) : null;
+
+  const header = (
+    <header className="flex items-center justify-between px-4 pt-3">
+      <button
+        onClick={handleExit}
+        aria-label="Exit workout"
+        className="w-11 h-11 rounded-full flex items-center justify-center text-neutral-400 hover:bg-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
+      >
+        <X size={22} />
+      </button>
+      <div className="text-xs text-neutral-500 font-mono text-right">
+        {PPL_META[type]?.name}
+      </div>
+    </header>
+  );
+
+  function renderBody() {
+    if (engine.page === 'done') {
+      return (
+        <div className="flex-1 flex flex-col items-center justify-center px-5 text-center">
+          <div className="text-3xl font-semibold text-neutral-100">Done!</div>
+          <div className="mt-2 text-sm text-neutral-400">
+            {PPL_META[type]?.name} complete
+          </div>
+        </div>
+      );
+    }
+    if (engine.page === 'intro' && exercise) {
+      return (
+        <ExerciseIntro
+          exercise={exercise}
+          lastEntry={lastEntry}
+          exerciseIndex={engine.currentStrengthIndex}
+          totalExercises={engine.totalStrengthExercises}
+          onStart={engine.startExercise}
+          onSkip={engine.skipExercise}
+        />
+      );
+    }
+    if (engine.page === 'logging' && exercise) {
+      const Cmp = exercise.unilateral ? UnilateralSetLogger : SetLogger;
+      return (
+        <Cmp
+          exercise={exercise}
+          setIndex={engine.currentSetIndex}
+          totalSets={engine.totalSetsForExercise}
+          loggedSets={engine.loggedSets}
+          lastEntry={lastEntry}
+          weightPrefill={engine.weightPrefill(exercise.id)}
+          onLog={engine.logSet}
+          onEditPrevious={engine.editPrevious}
+          onSkipRemaining={engine.skipRemaining}
+          onSkipExercise={engine.skipExercise}
+          onEndWorkout={engine.endWorkout}
+        />
+      );
+    }
+    if (engine.page === 'resting' && exercise) {
+      const prevSet = engine.loggedSets[engine.currentSetIndex];
+      const nextPreview = prevSet && !prevSet.left
+        ? {
+            reps: prevSet.reps ?? (exercise.targetReps?.[0] ?? 0),
+            weightKg: prevSet.weightKg ?? engine.weightPrefill(exercise.id),
+          }
+        : null;
+      return (
+        <RestTimer
+          durationSeconds={exercise.restSeconds || 60}
+          endsAt={engine.restEndsAt}
+          onDone={engine.restDone}
+          onSkip={engine.skipRest}
+          nextSetPreview={nextPreview}
+          audioEnabled={settings.audioEnabled}
+          hapticsEnabled={settings.hapticsEnabled}
+        />
+      );
+    }
+    if ((engine.page === 'finisher' || engine.page === 'circuit') && block) {
+      const miniWorkout = buildMiniWorkout(block);
+      const onComplete =
+        engine.page === 'finisher' ? engine.finisherComplete : engine.circuitComplete;
+      return (
+        <SkipPhaseRunner
+          workout={miniWorkout}
+          title={block.name}
+          audioEnabled={settings.audioEnabled}
+          hapticsEnabled={settings.hapticsEnabled}
+          onComplete={onComplete}
+          completeButtonLabel="Continue"
+        />
+      );
+    }
+    return null;
+  }
+
+  return (
+    <div className="min-h-full flex flex-col pt-safe pb-safe">
+      {header}
+      {renderBody()}
+      {confirmExit ? (
+        <ExitConfirm
+          onKeep={() => setConfirmExit(false)}
+          onSaveSkipped={saveAsSkipped}
+          onExit={exitWithoutSaving}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function buildMiniWorkout(block) {
+  // Convert a finisher/circuit block into the shape the skip engine expects.
+  const rounds = block.rounds;
+  const phases = [];
+  for (let r = 0; r < rounds; r++) {
+    for (const p of block.phases) {
+      phases.push({ ...p, roundIndex: r });
+    }
+  }
+  return { ...block, phases, rounds };
+}
+
+function ExitConfirm({ onKeep, onSaveSkipped, onExit }) {
+  return (
+    <div className="fixed inset-0 z-30 bg-black/70 flex items-end sm:items-center justify-center p-4">
+      <div className="w-full max-w-sm rounded-2xl bg-neutral-900 border border-neutral-800 p-5">
+        <h3 className="text-lg font-semibold text-neutral-100">Exit workout?</h3>
+        <p className="mt-1 text-sm text-neutral-400">
+          You can log what you completed as a skipped session or exit without saving.
+        </p>
+        <div className="mt-4 space-y-2">
+          <Button variant="secondary" size="md" className="w-full" onClick={onKeep}>
+            Keep going
+          </Button>
+          <Button variant="secondary" size="md" className="w-full" onClick={onSaveSkipped}>
+            Save as skipped
+          </Button>
+          <Button variant="danger" size="md" className="w-full" onClick={onExit}>
+            Exit without saving
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}

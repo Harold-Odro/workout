@@ -10,6 +10,14 @@ import {
 } from 'date-fns';
 import { getWorkout, WORKOUT_TYPES } from './workouts.js';
 
+const SKIP_TYPES = new Set(WORKOUT_TYPES);
+
+function isSkipSession(s) {
+  // Sessions without an explicit program are legacy skip sessions.
+  if (s.program && s.program !== 'skip') return false;
+  return SKIP_TYPES.has(s.type);
+}
+
 const WEEK_OPTS = { weekStartsOn: 1 }; // Monday-based
 
 // ---------- Helpers ----------
@@ -23,6 +31,7 @@ export function nonSkippedSessions(sessions) {
 }
 
 function plannedWorkout(type) {
+  if (!SKIP_TYPES.has(type)) return null;
   try {
     return getWorkout(type);
   } catch {
@@ -157,7 +166,7 @@ export function computeHeatmap(sessions, weeks = 12) {
 // ---------- PRs ----------
 
 export function computePRs(sessions) {
-  const valid = nonSkippedSessions(sessions);
+  const valid = nonSkippedSessions(sessions).filter(isSkipSession);
 
   // Longest continuous skip interval actually completed. We approximate using
   // the planned longest skip interval of workouts the user completed ALL

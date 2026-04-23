@@ -1,8 +1,6 @@
 import { computePRs } from './analytics.js';
 import { WORKOUT_TYPES } from './workouts.js';
 
-// Migration pipeline. Each step takes a state, returns the migrated state.
-
 function v1ToV2(state) {
   return {
     ...state,
@@ -26,9 +24,37 @@ function v2ToV3(state) {
   };
 }
 
+function v3ToV4(state) {
+  // Every existing session is a skip session.
+  const sessions = (state.sessions || []).map((s) => ({
+    program: 'skip',
+    exercises: null,
+    finisherCompleted: null,
+    ...s,
+  }));
+  return {
+    ...state,
+    sessions,
+    settings: {
+      ...state.settings,
+      activeProgram: state.settings?.activeProgram || 'skip',
+      ppl: {
+        scheduleMode: '3-day',
+        defaultWeightKg: 10,
+        levels: { push: 1, pull: 1, legs: 1, circuit: 1 },
+        exerciseLevels: {}, // per-exercise-id level overrides
+        ...(state.settings?.ppl || {}),
+      },
+    },
+    pendingExerciseProgressions: state.pendingExerciseProgressions || [],
+    version: 4,
+  };
+}
+
 const STEPS = [
   { from: 1, to: 2, fn: v1ToV2 },
   { from: 2, to: 3, fn: v2ToV3 },
+  { from: 3, to: 4, fn: v3ToV4 },
 ];
 
 export function migrate(state) {
@@ -41,4 +67,4 @@ export function migrate(state) {
   return current;
 }
 
-export const LATEST_VERSION = 3;
+export const LATEST_VERSION = 4;

@@ -3,29 +3,62 @@ import { format, parseISO } from 'date-fns';
 import CalendarHeatmap from '../components/CalendarHeatmap.jsx';
 import SessionDetailCard from '../components/SessionDetailCard.jsx';
 import { WORKOUT_TYPES, WORKOUT_META } from '../lib/workouts.js';
+import { PPL_META, PPL_TYPES } from '../lib/workoutsPPL.js';
 import { groupSessionsByWeek } from '../lib/analytics.js';
 import { getSessions } from '../lib/storage.js';
 
-const FILTERS = [
-  { id: 'all', label: 'All' },
-  ...WORKOUT_TYPES.map((t) => ({ id: t, label: WORKOUT_META[t].name })),
+const PROGRAM_FILTERS = [
+  { id: 'all',  label: 'All'  },
+  { id: 'skip', label: 'Skip' },
+  { id: 'ppl',  label: 'PPL'  },
 ];
+
+function typeFiltersFor(program) {
+  if (program === 'skip') {
+    return [
+      { id: 'all', label: 'All' },
+      ...WORKOUT_TYPES.map((t) => ({ id: t, label: WORKOUT_META[t].name })),
+    ];
+  }
+  if (program === 'ppl') {
+    return [
+      { id: 'all', label: 'All' },
+      ...PPL_TYPES.map((t) => ({ id: t, label: PPL_META[t].name })),
+    ];
+  }
+  return null;
+}
 
 export default function History() {
   const [sessions, setSessions] = useState([]);
-  const [filter, setFilter] = useState('all');
+  const [programFilter, setProgramFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
   const [selectedDate, setSelectedDate] = useState(null);
 
   useEffect(() => {
     setSessions(getSessions());
   }, []);
 
+  // Reset type filter when program filter changes.
+  useEffect(() => {
+    setTypeFilter('all');
+  }, [programFilter]);
+
+  const typeFilters = typeFiltersFor(programFilter);
+
   const filtered = useMemo(() => {
     let out = sessions;
-    if (filter !== 'all') out = out.filter((s) => s.type === filter);
-    if (selectedDate) out = out.filter((s) => s.date === selectedDate);
+    if (programFilter !== 'all') {
+      out = out.filter((s) => (s.program || 'skip') === programFilter);
+    }
+    if (typeFilter !== 'all') {
+      out = out.filter((s) => s.type === typeFilter);
+    }
+    if (selectedDate) {
+      out = out.filter((s) => s.date === selectedDate);
+    }
     return out;
-  }, [sessions, filter, selectedDate]);
+  }, [sessions, programFilter, typeFilter, selectedDate]);
 
   const groups = useMemo(() => groupSessionsByWeek(filtered), [filtered]);
 
@@ -50,14 +83,14 @@ export default function History() {
       </section>
 
       <section className="px-5 mt-6 flex flex-wrap gap-2">
-        {FILTERS.map((f) => {
-          const active = filter === f.id;
+        {PROGRAM_FILTERS.map((f) => {
+          const active = programFilter === f.id;
           return (
             <button
               key={f.id}
-              onClick={() => setFilter(f.id)}
+              onClick={() => setProgramFilter(f.id)}
               className={[
-                'px-3 min-h-[36px] rounded-full text-sm font-medium transition-colors',
+                'px-3 min-h-9 rounded-full text-sm font-medium transition-colors',
                 active
                   ? 'bg-green-500 text-neutral-950'
                   : 'bg-neutral-900 text-neutral-300 border border-neutral-800 hover:border-neutral-600',
@@ -68,6 +101,28 @@ export default function History() {
           );
         })}
       </section>
+
+      {typeFilters ? (
+        <section className="px-5 mt-2 flex flex-wrap gap-2">
+          {typeFilters.map((f) => {
+            const active = typeFilter === f.id;
+            return (
+              <button
+                key={f.id}
+                onClick={() => setTypeFilter(f.id)}
+                className={[
+                  'px-2.5 min-h-8 rounded-full text-xs font-medium transition-colors',
+                  active
+                    ? 'bg-neutral-200 text-neutral-950'
+                    : 'bg-neutral-900 text-neutral-400 border border-neutral-800 hover:border-neutral-600',
+                ].join(' ')}
+              >
+                {f.label}
+              </button>
+            );
+          })}
+        </section>
+      ) : null}
 
       {selectedDate ? (
         <div className="px-5 mt-4 flex items-center justify-between text-sm">

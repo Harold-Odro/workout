@@ -1,10 +1,19 @@
 import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Button from '../components/Button.jsx';
+import ExerciseBreakdown from '../components/ExerciseBreakdown.jsx';
 import { WORKOUT_META } from '../lib/workouts.js';
+import { PPL_META } from '../lib/workoutsPPL.js';
 import { formatDuration } from '../lib/time.js';
-import { getState, saveSession, setPendingProgression, updateSession } from '../lib/storage.js';
+import {
+  addPendingExerciseProgression,
+  getState,
+  saveSession,
+  setPendingProgression,
+  updateSession,
+} from '../lib/storage.js';
 import { shouldSuggestProgression } from '../lib/progression.js';
+import { newSuggestionsFromSession } from '../lib/progressionPPL.js';
 
 function rpeDescriptor(v) {
   if (v <= 2) return 'Easy';
@@ -23,31 +32,44 @@ export default function Log({ setToast }) {
 
   if (!draft) return <Navigate to="/" replace />;
 
-  const meta = WORKOUT_META[draft.type];
+  const program = draft.program || 'skip';
+  const meta = program === 'ppl' ? PPL_META[draft.type] : WORKOUT_META[draft.type];
 
-  const [completedRounds, setCompletedRounds] = useState(draft.completedRounds);
+  const [completedRounds, setCompletedRounds] = useState(
+    draft.completedRounds ?? draft.plannedRounds ?? 0
+  );
   const [rpe, setRpe] = useState(typeof draft.rpe === 'number' ? draft.rpe : 6);
   const [notes, setNotes] = useState(draft.notes || '');
 
   function handleSave() {
     const patch = {
-      completedRounds: Number(completedRounds) || 0,
       rpe: Number(rpe),
       notes: notes.trim(),
     };
+    if (program === 'skip') {
+      patch.completedRounds = Number(completedRounds) || 0;
+    }
+
     if (editingId) {
       updateSession(editingId, patch);
       setToast?.(`${meta?.name || 'Workout'} updated.`);
       navigate(`/session/${editingId}`, { replace: true });
       return;
     }
-    saveSession({ ...draft, ...patch });
-    // Check if this save triggers a progression suggestion.
+
+    const saved = saveSession({ ...draft, ...patch });
     const after = getState();
-    const suggestion = shouldSuggestProgression(after, draft.type);
-    if (suggestion && !after.pendingProgression) {
-      setPendingProgression(suggestion);
+
+    if (program === 'skip') {
+      const suggestion = shouldSuggestProgression(after, draft.type);
+      if (suggestion && !after.pendingProgression) {
+        setPendingProgression(suggestion);
+      }
+    } else if (program === 'ppl') {
+      const suggestions = newSuggestionsFromSession(after, saved);
+      for (const s of suggestions) addPendingExerciseProgression(s);
     }
+
     setToast?.(`${meta?.name || 'Workout'} saved.`);
     navigate('/', { replace: true });
   }
@@ -56,6 +78,14 @@ export default function Log({ setToast }) {
     if (editingId) navigate(`/session/${editingId}`, { replace: true });
     else navigate('/', { replace: true });
   }
+
+  const isPPL = program === 'ppl';
+  const totalSets = isPPL
+    ? (draft.exercises || []).reduce(
+        (a, e) => a + (e.sets || []).filter((s) => s.completed).length,
+        0
+      )
+    : 0;
 
   return (
     <div className="min-h-full pt-safe pb-10">
@@ -67,7 +97,11 @@ export default function Log({ setToast }) {
           {meta?.name || draft.type}
         </h1>
         <div className="mt-1 text-sm text-neutral-400">
-          {formatDuration(draft.durationSeconds)} · {draft.plannedRounds} rounds planned
+          {formatDuration(draft.durationSeconds)}
+          {isPPL && totalSets > 0 ? ` · ${totalSets} set${totalSets === 1 ? '' : 's'}` : ''}
+          {!isPPL && draft.plannedRounds
+            ? ` · ${draft.plannedRounds} rounds planned`
+            : ''}
         </div>
       </header>
 
@@ -78,21 +112,32 @@ export default function Log({ setToast }) {
         }}
         className="px-5 space-y-5"
       >
-        <div>
-          <label htmlFor="rounds" className="block text-sm text-neutral-400 mb-1">
-            Completed rounds
-          </label>
-          <input
-            id="rounds"
-            type="number"
-            inputMode="numeric"
-            min="0"
-            max={draft.plannedRounds + 10}
-            value={completedRounds}
-            onChange={(e) => setCompletedRounds(e.target.value)}
-            className="w-full rounded-xl bg-neutral-900 border border-neutral-800 px-4 py-3 text-lg text-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
-          />
-        </div>
+        {isPPL && draft.exercises?.length > 0 ? (
+          <div>
+            <label className="block text-sm text-neutral-400 mb-2">
+              Exercise summary
+            </label>
+            <ExerciseBreakdown exercises={draft.exercises} defaultOpen={false} />
+          </div>
+        ) : null}
+
+        {!isPPL ? (
+          <div>
+            <label htmlFor="rounds" className="block text-sm text-neutral-400 mb-1">
+              Completed rounds
+            </label>
+            <input
+              id="rounds"
+              type="number"
+              inputMode="numeric"
+              min="0"
+              max={(draft.plannedRounds || 0) + 10}
+              value={completedRounds}
+              onChange={(e) => setCompletedRounds(e.target.value)}
+              className="w-full rounded-xl bg-neutral-900 border border-neutral-800 px-4 py-3 text-lg text-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
+            />
+          </div>
+        ) : null}
 
         <div>
           <label className="block text-sm text-neutral-400 mb-1">Duration</label>
@@ -104,7 +149,7 @@ export default function Log({ setToast }) {
         <div>
           <div className="flex items-baseline justify-between mb-2">
             <label htmlFor="rpe" className="text-sm text-neutral-400">
-              Effort (RPE)
+              Overall effort (RPE)
             </label>
             <div className="text-sm">
               <span className="font-mono text-2xl text-green-500">{rpe}</span>

@@ -33,6 +33,9 @@ export const tones = {
   transition: () => beep({ freq: 660, duration: 0.35, gain: 0.22 }),
   startSkip: () => beep({ freq: 1200, duration: 0.25, gain: 0.22 }),
   startRest: () => beep({ freq: 440, duration: 0.3, gain: 0.22 }),
+  // Rest-between-sets cues (distinct from phase-transition tones):
+  restCountdown: () => beep({ freq: 660, duration: 0.08, gain: 0.2 }),
+  restEnd: () => beep({ freq: 520, duration: 0.45, gain: 0.25 }),
   complete: () => {
     beep({ freq: 880, duration: 0.18 });
     setTimeout(() => beep({ freq: 1320, duration: 0.35, gain: 0.25 }), 180);
