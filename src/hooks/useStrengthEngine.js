@@ -147,6 +147,13 @@ function reducer(state, action) {
         restEndsAt: 0,
       };
     }
+    case 'ADD_REST': {
+      if (state.page !== 'resting') return state;
+      return {
+        ...state,
+        restEndsAt: state.restEndsAt + (action.seconds || 30) * 1000,
+      };
+    }
     case 'EDIT_PREVIOUS_SET': {
       if (state.currentSetIndex === 0) return state;
       return {
@@ -257,6 +264,7 @@ export function useStrengthEngine(workout, { defaultWeightKg = 10 } = {}) {
   const startExercise = useCallback(() => dispatch({ type: 'START_EXERCISE' }), []);
   const logSet = useCallback((payload) => dispatch({ type: 'LOG_SET', payload }), []);
   const skipRest = useCallback(() => dispatch({ type: 'SKIP_REST' }), []);
+  const addRest = useCallback((seconds = 30) => dispatch({ type: 'ADD_REST', seconds }), []);
   const restDone = useCallback(() => dispatch({ type: 'REST_DONE' }), []);
   const editPrevious = useCallback(() => dispatch({ type: 'EDIT_PREVIOUS_SET' }), []);
   const skipExercise = useCallback(() => dispatch({ type: 'SKIP_EXERCISE' }), []);
@@ -286,6 +294,7 @@ export function useStrengthEngine(workout, { defaultWeightKg = 10 } = {}) {
     startExercise,
     logSet,
     skipRest,
+    addRest,
     restDone,
     editPrevious,
     skipExercise,

@@ -153,20 +153,36 @@ export default function PPLWorkoutFlow({ type }) {
       );
     }
     if (engine.page === 'resting' && exercise) {
-      const prevSet = engine.loggedSets[engine.currentSetIndex];
-      const nextPreview = prevSet && !prevSet.left
-        ? {
-            reps: prevSet.reps ?? (exercise.targetReps?.[0] ?? 0),
-            weightKg: prevSet.weightKg ?? engine.weightPrefill(exercise.id),
-          }
-        : null;
+      const justSet = engine.loggedSets[engine.currentSetIndex];
+      // Next-set preview: prefer what the user just did (same weight, target reps
+      // within the low end of range). For unilateral, pick the heavier side.
+      let nextPreview = null;
+      if (justSet && (justSet.left || justSet.right)) {
+        const l = Number(justSet.left?.weightKg) || 0;
+        const r = Number(justSet.right?.weightKg) || 0;
+        const side = l >= r ? justSet.left : justSet.right;
+        nextPreview = {
+          reps: side?.reps ?? (exercise.targetReps?.[0] ?? 0),
+          weightKg: side?.weightKg ?? engine.weightPrefill(exercise.id),
+        };
+      } else if (justSet) {
+        nextPreview = {
+          reps: justSet.reps ?? (exercise.targetReps?.[0] ?? 0),
+          weightKg: justSet.weightKg ?? engine.weightPrefill(exercise.id),
+        };
+      }
       return (
         <RestTimer
           durationSeconds={exercise.restSeconds || 60}
           endsAt={engine.restEndsAt}
           onDone={engine.restDone}
           onSkip={engine.skipRest}
+          onAdd={() => engine.addRest(30)}
           nextSetPreview={nextPreview}
+          justCompletedSet={justSet}
+          exerciseName={exercise.name}
+          setIndex={engine.currentSetIndex}
+          totalSets={engine.totalSetsForExercise}
           audioEnabled={settings.audioEnabled}
           hapticsEnabled={settings.hapticsEnabled}
         />
