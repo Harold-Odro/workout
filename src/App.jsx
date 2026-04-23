@@ -7,6 +7,7 @@ import Log from './screens/Log.jsx';
 import History from './screens/History.jsx';
 import SessionDetail from './screens/SessionDetail.jsx';
 import Plan from './screens/Plan.jsx';
+import Settings from './screens/Settings.jsx';
 
 // Progress pulls in Recharts — lazy-load so it doesn't bloat the main bundle.
 const Progress = lazy(() => import('./screens/Progress.jsx'));
@@ -18,16 +19,11 @@ export default function App() {
   const showNav = !FULLSCREEN_ROUTES.includes(location.pathname);
   const [toast, setToast] = useState(null);
 
-  // Auto-dismiss toast after a moment, and clear on navigation away.
   useEffect(() => {
     if (!toast) return;
     const t = setTimeout(() => setToast(null), 3500);
     return () => clearTimeout(t);
   }, [toast]);
-
-  useEffect(() => {
-    if (location.pathname !== '/') setToast(null);
-  }, [location.pathname]);
 
   return (
     <div className="min-h-full bg-neutral-950 text-neutral-100">
@@ -46,9 +42,19 @@ export default function App() {
           }
         />
         <Route path="/plan" element={<Plan />} />
+        <Route path="/settings" element={<Settings setToast={setToast} />} />
         <Route path="*" element={<Today toast={toast} />} />
       </Routes>
       {showNav ? <BottomNav /> : null}
+      {toast && location.pathname !== '/' ? (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 rounded-xl bg-green-500/10 border border-green-500/40 text-green-400 px-4 py-2 text-sm backdrop-blur shadow-lg"
+        >
+          {toast}
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -3,7 +3,8 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Button from '../components/Button.jsx';
 import { WORKOUT_META } from '../lib/workouts.js';
 import { formatDuration } from '../lib/time.js';
-import { saveSession, updateSession } from '../lib/storage.js';
+import { getState, saveSession, setPendingProgression, updateSession } from '../lib/storage.js';
+import { shouldSuggestProgression } from '../lib/progression.js';
 
 function rpeDescriptor(v) {
   if (v <= 2) return 'Easy';
@@ -41,6 +42,12 @@ export default function Log({ setToast }) {
       return;
     }
     saveSession({ ...draft, ...patch });
+    // Check if this save triggers a progression suggestion.
+    const after = getState();
+    const suggestion = shouldSuggestProgression(after, draft.type);
+    if (suggestion && !after.pendingProgression) {
+      setPendingProgression(suggestion);
+    }
     setToast?.(`${meta?.name || 'Workout'} saved.`);
     navigate('/', { replace: true });
   }

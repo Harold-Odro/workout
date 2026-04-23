@@ -1,7 +1,7 @@
 import { computePRs } from './analytics.js';
+import { WORKOUT_TYPES } from './workouts.js';
 
 // Migration pipeline. Each step takes a state, returns the migrated state.
-// Idempotent per version — safe to run repeatedly.
 
 function v1ToV2(state) {
   return {
@@ -11,8 +11,24 @@ function v1ToV2(state) {
   };
 }
 
+function v2ToV3(state) {
+  const levels = {};
+  for (const t of WORKOUT_TYPES) levels[t] = 1;
+  return {
+    ...state,
+    settings: {
+      ...state.settings,
+      levels: { ...levels, ...(state.settings?.levels || {}) },
+    },
+    pendingProgression: state.pendingProgression || null,
+    dismissedProgressionUntil: state.dismissedProgressionUntil || null,
+    version: 3,
+  };
+}
+
 const STEPS = [
   { from: 1, to: 2, fn: v1ToV2 },
+  { from: 2, to: 3, fn: v2ToV3 },
 ];
 
 export function migrate(state) {
@@ -25,4 +41,4 @@ export function migrate(state) {
   return current;
 }
 
-export const LATEST_VERSION = 2;
+export const LATEST_VERSION = 3;

@@ -5,7 +5,7 @@ import ProgressRing from '../components/ProgressRing.jsx';
 import Button from '../components/Button.jsx';
 import { getWorkout } from '../lib/workouts.js';
 import { formatMMSS } from '../lib/time.js';
-import { getSettings } from '../lib/storage.js';
+import { getLevel, getSettings, saveSession } from '../lib/storage.js';
 import { useWorkoutEngine } from '../hooks/useWorkoutEngine.js';
 import { useWakeLock } from '../hooks/useWakeLock.js';
 
@@ -16,7 +16,8 @@ export default function Workout() {
 
   if (!type) return <Navigate to="/" replace />;
 
-  const workout = useMemo(() => getWorkout(type), [type]);
+  const [level] = useState(() => getLevel(type));
+  const workout = useMemo(() => getWorkout(type, level), [type, level]);
   const [settings] = useState(() => getSettings());
   const [confirmExit, setConfirmExit] = useState(false);
 
@@ -25,15 +26,12 @@ export default function Workout() {
     hapticsEnabled: settings.hapticsEnabled,
   });
 
-  // Keep the screen awake during countdown + running + paused (not when idle/complete).
   useWakeLock(engine.isCountdown || engine.isRunning || engine.isPaused);
 
-  // Auto-start on mount.
   useEffect(() => {
     if (engine.status === 'idle') engine.start();
   }, [engine.status]);
 
-  // On completion → route to Log with session draft.
   useEffect(() => {
     if (!engine.isComplete) return;
     const now = new Date();
@@ -41,6 +39,7 @@ export default function Workout() {
       date: now.toISOString().slice(0, 10),
       startedAt: now.toISOString(),
       type,
+      level,
       plannedRounds: engine.totalRounds,
       completedRounds: engine.totalRounds,
       durationSeconds: Math.round(engine.elapsedSeconds),
@@ -57,8 +56,26 @@ export default function Workout() {
     setConfirmExit(true);
   }
 
-  function confirmExitYes() {
+  function exitWithoutSaving() {
     engine.exit();
+    navigate('/', { replace: true });
+  }
+
+  function saveAsSkipped() {
+    engine.exit();
+    const now = new Date();
+    saveSession({
+      date: now.toISOString().slice(0, 10),
+      startedAt: now.toISOString(),
+      type,
+      level,
+      plannedRounds: engine.totalRounds,
+      completedRounds: engine.completedRounds,
+      durationSeconds: Math.round(engine.elapsedSeconds),
+      rpe: 0,
+      notes: '',
+      skipped: true,
+    });
     navigate('/', { replace: true });
   }
 
@@ -68,8 +85,6 @@ export default function Workout() {
       ? 1 - engine.introRemaining / 5
       : phase?.type === 'timed' && phase.duration
       ? 1 - engine.secondsRemaining / phase.duration
-      : phase?.type === 'reps'
-      ? 0
       : 0;
 
   const nextLabel = engine.nextPhase
@@ -105,7 +120,7 @@ export default function Workout() {
               </div>
             </ProgressRing>
             <div className="mt-8 text-sm text-neutral-500">
-              Starting: {workout.name}
+              Starting: {workout.name} · L{level}
             </div>
           </>
         ) : phase?.type === 'timed' ? (
@@ -187,24 +202,32 @@ export default function Workout() {
           <div className="w-full max-w-sm rounded-2xl bg-neutral-900 border border-neutral-800 p-5">
             <h3 className="text-lg font-semibold text-neutral-100">Exit workout?</h3>
             <p className="mt-1 text-sm text-neutral-400">
-              Your progress won't be saved.
+              You can log this as a skipped session or exit without saving.
             </p>
-            <div className="mt-4 flex gap-3">
+            <div className="mt-4 space-y-2">
               <Button
                 variant="secondary"
                 size="md"
-                className="flex-1"
+                className="w-full"
                 onClick={() => setConfirmExit(false)}
               >
                 Keep going
               </Button>
               <Button
+                variant="secondary"
+                size="md"
+                className="w-full"
+                onClick={saveAsSkipped}
+              >
+                Save as skipped
+              </Button>
+              <Button
                 variant="danger"
                 size="md"
-                className="flex-1"
-                onClick={confirmExitYes}
+                className="w-full"
+                onClick={exitWithoutSaving}
               >
-                Exit
+                Exit without saving
               </Button>
             </div>
           </div>

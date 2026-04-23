@@ -1,23 +1,26 @@
 import { computePRs } from './analytics.js';
 import { migrate, LATEST_VERSION } from './migrations.js';
+import { WORKOUT_TYPES, MAX_LEVEL } from './workouts.js';
 
 const KEY = 'skip-tracker-v1';
 
-const DEFAULT_STATE = {
-  sessions: [],
-  settings: {
-    audioEnabled: true,
-    hapticsEnabled: true,
-  },
-  prs: computePRs([]),
-  version: LATEST_VERSION,
-};
+function defaultLevels() {
+  const o = {};
+  for (const t of WORKOUT_TYPES) o[t] = 1;
+  return o;
+}
 
 function defaultState() {
   return {
     sessions: [],
-    settings: { audioEnabled: true, hapticsEnabled: true },
+    settings: {
+      audioEnabled: true,
+      hapticsEnabled: true,
+      levels: defaultLevels(),
+    },
     prs: computePRs([]),
+    pendingProgression: null,
+    dismissedProgressionUntil: null,
     version: LATEST_VERSION,
   };
 }
@@ -27,14 +30,18 @@ function normalize(parsed) {
   return {
     ...base,
     ...parsed,
-    settings: { ...base.settings, ...(parsed.settings || {}) },
+    settings: {
+      ...base.settings,
+      ...(parsed.settings || {}),
+      levels: { ...base.settings.levels, ...(parsed.settings?.levels || {}) },
+    },
     sessions: Array.isArray(parsed.sessions) ? parsed.sessions : [],
     prs: parsed.prs || base.prs,
+    pendingProgression: parsed.pendingProgression ?? null,
+    dismissedProgressionUntil: parsed.dismissedProgressionUntil ?? null,
     version: parsed.version || 1,
   };
 }
-
-let migratedOnce = false;
 
 function read() {
   try {
@@ -44,9 +51,7 @@ function read() {
     let state = normalize(parsed);
     if (state.version < LATEST_VERSION) {
       state = migrate(state);
-      // Persist migrated state once so subsequent reads don't re-migrate.
       localStorage.setItem(KEY, JSON.stringify(state));
-      migratedOnce = true;
     }
     return state;
   } catch {
@@ -64,25 +69,13 @@ function persistWithRecomputedPRs(state) {
   return next;
 }
 
-export function getState() {
-  return read();
-}
-
-export function getSessions() {
-  return read().sessions;
-}
-
-export function getSessionById(id) {
-  return read().sessions.find((s) => s.id === id) || null;
-}
-
-export function getSettings() {
-  return read().settings;
-}
-
-export function getPRs() {
-  return read().prs;
-}
+export function getState() { return read(); }
+export function getSessions() { return read().sessions; }
+export function getSessionById(id) { return read().sessions.find((s) => s.id === id) || null; }
+export function getSettings() { return read().settings; }
+export function getPRs() { return read().prs; }
+export function getLevels() { return read().settings.levels || defaultLevels(); }
+export function getLevel(type) { return (read().settings.levels || defaultLevels())[type] ?? 1; }
 
 function uuid() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
@@ -126,4 +119,51 @@ export function updateSettings(patch) {
   state.settings = { ...state.settings, ...patch };
   write(state);
   return state.settings;
+}
+
+function clampLevel(level) {
+  return Math.max(1, Math.min(MAX_LEVEL, Number(level) || 1));
+}
+
+export function setLevel(type, level) {
+  const state = read();
+  state.settings = {
+    ...state.settings,
+    levels: { ...state.settings.levels, [type]: clampLevel(level) },
+  };
+  // Any pending progression for this type is now resolved.
+  if (state.pendingProgression?.type === type) state.pendingProgression = null;
+  // Clear dismissal too — user has made a choice.
+  if (state.dismissedProgressionUntil?.[type]) {
+    const { [type]: _, ...rest } = state.dismissedProgressionUntil;
+    state.dismissedProgressionUntil = Object.keys(rest).length ? rest : null;
+  }
+  write(state);
+  return state.settings.levels;
+}
+
+export function setPendingProgression(p) {
+  const state = read();
+  state.pendingProgression = p || null;
+  write(state);
+}
+
+export function dismissProgression(type, untilDate) {
+  const state = read();
+  state.dismissedProgressionUntil = {
+    ...(state.dismissedProgressionUntil || {}),
+    [type]: untilDate,
+  };
+  if (state.pendingProgression?.type === type) state.pendingProgression = null;
+  write(state);
+}
+
+export function replaceState(next) {
+  const normalized = normalize(next);
+  const migrated = normalized.version < LATEST_VERSION ? migrate(normalized) : normalized;
+  return persistWithRecomputedPRs(migrated);
+}
+
+export function clearAll() {
+  localStorage.removeItem(KEY);
 }

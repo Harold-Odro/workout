@@ -32,7 +32,7 @@ export default function ProgressRing({
           strokeLinecap="round"
           strokeDasharray={c}
           strokeDashoffset={offset}
-          style={{ transition: 'stroke-dashoffset 120ms linear' }}
+          className="progress-ring-fg"
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">{children}</div>

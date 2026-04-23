@@ -1,15 +1,12 @@
-// Workout definitions.
+// Workout definitions with progression ladders.
 //
-// A workout = metadata + a flat phase list. The engine walks the list
-// and doesn't care about rounds — `roundIndex` is carried on each phase
-// purely for UI ("Round 3 of 8").
+// Each workout type has an array of level configs. A level config is a
+// compact description of the workout's parameters; a builder turns it into
+// the flat phase list the engine walks.
 //
-// Phase shape:
+// Phase shape (unchanged from Phase 1):
 //   { type: 'timed', label, duration, intensity, roundIndex }
-//   { type: 'reps',  label, reps,                  roundIndex }
-//
-// `intensity` is used by later-phase analytics (e.g. skip-minute volume).
-// Keep it to: 'skip' | 'rest' | 'strength'.
+//   { type: 'reps',  label, reps,     intensity, roundIndex }
 
 export const WORKOUT_TYPES = ['endurance', 'hiit', 'conditioning'];
 
@@ -17,99 +14,143 @@ export const WORKOUT_META = {
   endurance: {
     id: 'endurance',
     name: 'Endurance',
-    short: '8 rounds · 2:00 skip / 1:00 rest · ~24 min',
-    estMinutes: 24,
+    tagline: 'Steady aerobic work',
   },
   hiit: {
     id: 'hiit',
     name: 'HIIT',
-    short: '15× 0:45/0:15 + squats/pushups/plank finisher · ~18 min',
-    estMinutes: 18,
+    tagline: 'High-intensity intervals + finisher',
   },
   conditioning: {
     id: 'conditioning',
     name: "Runner's Conditioning",
-    short: '5 rounds · skip + lunges/squats/climbers/rest · ~25 min',
-    estMinutes: 25,
+    tagline: 'Skip + strength circuit',
   },
 };
 
-function enduranceRound(i) {
-  return [
-    { type: 'timed', label: 'SKIP', duration: 120, intensity: 'skip',  roundIndex: i },
-    { type: 'timed', label: 'REST', duration: 60,  intensity: 'rest',  roundIndex: i },
-  ];
-}
+// ---------- Progression ladders ----------
 
-function buildEndurance() {
-  const rounds = 8;
-  const phases = [];
-  for (let i = 0; i < rounds; i++) phases.push(...enduranceRound(i));
-  return { rounds, phases };
-}
-
-function hiitSkipRound(i) {
-  return [
-    { type: 'timed', label: 'SKIP FAST', duration: 45, intensity: 'skip', roundIndex: i },
-    { type: 'timed', label: 'REST',      duration: 15, intensity: 'rest', roundIndex: i },
-  ];
-}
-
-function hiitFinisherRound(i, offset) {
-  // offset = number of skip rounds already counted, so finisher rounds
-  // continue the roundIndex sequence.
-  const r = offset + i;
-  return [
-    { type: 'reps',  label: 'SQUATS',  reps: 15,                               intensity: 'strength', roundIndex: r },
-    { type: 'reps',  label: 'PUSHUPS', reps: 10,                               intensity: 'strength', roundIndex: r },
-    { type: 'timed', label: 'PLANK',   duration: 30, intensity: 'strength',   roundIndex: r },
-  ];
-}
-
-function buildHiit() {
-  const skipRounds = 15;
-  const finisherRounds = 3;
-  const phases = [];
-  for (let i = 0; i < skipRounds; i++) phases.push(...hiitSkipRound(i));
-  for (let i = 0; i < finisherRounds; i++) phases.push(...hiitFinisherRound(i, skipRounds));
-  return { rounds: skipRounds + finisherRounds, phases };
-}
-
-function conditioningRound(i) {
-  return [
-    { type: 'timed', label: 'SKIP',             duration: 120, intensity: 'skip',     roundIndex: i },
-    { type: 'reps',  label: 'WALKING LUNGES',   reps: 20,      intensity: 'strength', roundIndex: i },
-    { type: 'reps',  label: 'SQUATS',           reps: 15,      intensity: 'strength', roundIndex: i },
-    { type: 'timed', label: 'MOUNTAIN CLIMBERS', duration: 30, intensity: 'strength', roundIndex: i },
-    { type: 'timed', label: 'REST',             duration: 45,  intensity: 'rest',     roundIndex: i },
-  ];
-}
-
-function buildConditioning() {
-  const rounds = 5;
-  const phases = [];
-  for (let i = 0; i < rounds; i++) phases.push(...conditioningRound(i));
-  return { rounds, phases };
-}
-
-// Build once at module load — workouts are static in Phase 1.
-const WORKOUTS = {
-  endurance:    { ...WORKOUT_META.endurance,    ...buildEndurance() },
-  hiit:         { ...WORKOUT_META.hiit,         ...buildHiit() },
-  conditioning: { ...WORKOUT_META.conditioning, ...buildConditioning() },
+export const LEVELS = {
+  endurance: [
+    { level: 1, rounds: 8,  skip: 120, rest: 60 },
+    { level: 2, rounds: 10, skip: 120, rest: 60 },
+    { level: 3, rounds: 10, skip: 150, rest: 60 },
+    { level: 4, rounds: 10, skip: 180, rest: 45 },
+    { level: 5, rounds: 12, skip: 180, rest: 45 },
+  ],
+  hiit: [
+    { level: 1, rounds: 15, skip: 45, rest: 15 },
+    { level: 2, rounds: 18, skip: 45, rest: 15 },
+    { level: 3, rounds: 20, skip: 45, rest: 15 },
+    { level: 4, rounds: 20, skip: 50, rest: 10 },
+    { level: 5, rounds: 24, skip: 50, rest: 10 },
+  ],
+  conditioning: [
+    { level: 1, rounds: 5, skip: 120 },
+    { level: 2, rounds: 6, skip: 120 },
+    { level: 3, rounds: 6, skip: 150 },
+    { level: 4, rounds: 7, skip: 150 },
+    { level: 5, rounds: 8, skip: 180 },
+  ],
 };
 
-export function getWorkout(type) {
-  const w = WORKOUTS[type];
-  if (!w) throw new Error(`Unknown workout type: ${type}`);
-  return w;
+export const MAX_LEVEL = 5;
+
+// HIIT's strength finisher is fixed across levels.
+const HIIT_FINISHER_ROUNDS = 3;
+
+// ---------- Builders ----------
+
+function buildEndurance(cfg) {
+  const phases = [];
+  for (let i = 0; i < cfg.rounds; i++) {
+    phases.push(
+      { type: 'timed', label: 'SKIP', duration: cfg.skip, intensity: 'skip', roundIndex: i },
+      { type: 'timed', label: 'REST', duration: cfg.rest, intensity: 'rest', roundIndex: i }
+    );
+  }
+  return phases;
+}
+
+function buildHiit(cfg) {
+  const phases = [];
+  for (let i = 0; i < cfg.rounds; i++) {
+    phases.push(
+      { type: 'timed', label: 'SKIP FAST', duration: cfg.skip, intensity: 'skip', roundIndex: i },
+      { type: 'timed', label: 'REST',      duration: cfg.rest, intensity: 'rest', roundIndex: i }
+    );
+  }
+  for (let i = 0; i < HIIT_FINISHER_ROUNDS; i++) {
+    const r = cfg.rounds + i;
+    phases.push(
+      { type: 'reps',  label: 'SQUATS',  reps: 15, intensity: 'strength', roundIndex: r },
+      { type: 'reps',  label: 'PUSHUPS', reps: 10, intensity: 'strength', roundIndex: r },
+      { type: 'timed', label: 'PLANK',   duration: 30, intensity: 'strength', roundIndex: r }
+    );
+  }
+  return phases;
+}
+
+function buildConditioning(cfg) {
+  const phases = [];
+  for (let i = 0; i < cfg.rounds; i++) {
+    phases.push(
+      { type: 'timed', label: 'SKIP',              duration: cfg.skip, intensity: 'skip',     roundIndex: i },
+      { type: 'reps',  label: 'WALKING LUNGES',    reps: 20,           intensity: 'strength', roundIndex: i },
+      { type: 'reps',  label: 'SQUATS',            reps: 15,           intensity: 'strength', roundIndex: i },
+      { type: 'timed', label: 'MOUNTAIN CLIMBERS', duration: 30,       intensity: 'strength', roundIndex: i },
+      { type: 'timed', label: 'REST',              duration: 45,       intensity: 'rest',     roundIndex: i }
+    );
+  }
+  return phases;
+}
+
+const BUILDERS = {
+  endurance: buildEndurance,
+  hiit: buildHiit,
+  conditioning: buildConditioning,
+};
+
+// ---------- Public API ----------
+
+export function getLevelConfig(type, level) {
+  const ladder = LEVELS[type];
+  if (!ladder) throw new Error(`Unknown workout type: ${type}`);
+  const clamped = Math.max(1, Math.min(MAX_LEVEL, level || 1));
+  return ladder[clamped - 1];
+}
+
+export function getWorkout(type, level = 1) {
+  const meta = WORKOUT_META[type];
+  if (!meta) throw new Error(`Unknown workout type: ${type}`);
+  const cfg = getLevelConfig(type, level);
+  const phases = BUILDERS[type](cfg);
+  const rounds = type === 'hiit' ? cfg.rounds + HIIT_FINISHER_ROUNDS : cfg.rounds;
+  return { ...meta, level: cfg.level, cfg, phases, rounds };
 }
 
 export function plannedDurationSeconds(workout) {
-  // Rep phases get a rough 30s estimate for display purposes only —
-  // actual duration comes from the timer.
+  // Rough 30s per rep phase for display.
   return workout.phases.reduce((acc, p) => {
     if (p.type === 'timed') return acc + p.duration;
     return acc + 30;
   }, 0);
+}
+
+export function describeLevel(type, level) {
+  const cfg = getLevelConfig(type, level);
+  if (type === 'endurance' || type === 'hiit') {
+    const skip = `${Math.floor(cfg.skip / 60)}:${String(cfg.skip % 60).padStart(2, '0')}`;
+    const rest = cfg.rest < 60
+      ? `:${String(cfg.rest).padStart(2, '0')}`
+      : `${Math.floor(cfg.rest / 60)}:${String(cfg.rest % 60).padStart(2, '0')}`;
+    return `${cfg.rounds} rounds · ${skip} skip / ${rest} rest`;
+  }
+  const skip = `${Math.floor(cfg.skip / 60)}:${String(cfg.skip % 60).padStart(2, '0')}`;
+  return `${cfg.rounds} rounds · ${skip} skip + strength circuit`;
+}
+
+export function estimatedMinutes(type, level) {
+  const w = getWorkout(type, level);
+  return Math.round(plannedDurationSeconds(w) / 60);
 }
