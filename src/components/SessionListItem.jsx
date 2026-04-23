@@ -7,32 +7,50 @@ function metaForSession(session) {
   return WORKOUT_META[session.type];
 }
 
-export default function SessionListItem({ session }) {
+export default function SessionListItem({ session, index }) {
   const meta = metaForSession(session);
   const isPPL = session.program === 'ppl';
+  const num = index != null ? String(index).padStart(2, '0') : null;
+
   return (
-    <div className="flex items-center gap-3 py-3 border-b border-neutral-900 last:border-b-0">
+    <li className="flex items-center gap-5 bg-surface-1 px-5 py-4 hover:bg-surface-high transition-colors">
+      {num && (
+        <span className="font-mono text-[10px] tabular tracking-[0.2em] text-ink-faint w-6 shrink-0">
+          {num}
+        </span>
+      )}
+
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-neutral-100 truncate">
+        <div className="flex items-baseline gap-2.5">
+          <span className="font-serif text-lg text-ink leading-tight truncate">
             {meta?.name || session.type}
           </span>
-          <span className={[
-            'text-[10px] font-mono uppercase tracking-wide px-1.5 py-0.5 rounded',
-            isPPL ? 'bg-blue-500/15 text-blue-400' : 'bg-green-500/15 text-green-400',
-          ].join(' ')}>
-            {isPPL ? 'PPL' : 'skip'}
+          <span
+            className={[
+              'font-mono text-[9px] tracking-[0.2em] uppercase px-1.5 py-0.5 rounded-sm',
+              isPPL
+                ? 'bg-surface-high text-ink-dim'
+                : 'bg-crimson-blood/40 text-crimson',
+            ].join(' ')}
+          >
+            {isPPL ? 'PPL' : 'SKIP'}
           </span>
         </div>
-        <div className="text-xs text-neutral-500">
-          {formatDateShort(session.date)} · {formatDuration(session.durationSeconds)}
+        <div className="mt-1 label-md text-ink-faint">
+          <span className="tabular">{formatDateShort(session.date)}</span>
+          <span className="mx-2 opacity-50">/</span>
+          <span className="tabular">{formatDuration(session.durationSeconds)}</span>
         </div>
       </div>
+
       {session.rpe ? (
-        <div className="text-xs font-mono px-2 py-1 rounded-md bg-neutral-800 text-neutral-300">
-          RPE {session.rpe}
+        <div className="text-right">
+          <div className="label-md text-ink-faint">RPE</div>
+          <div className="font-mono tabular text-xl text-crimson leading-none mt-0.5">
+            {session.rpe}
+          </div>
         </div>
       ) : null}
-    </div>
+    </li>
   );
 }

@@ -1,18 +1,18 @@
 const VARIANTS = {
   primary:
-    'bg-green-500 text-neutral-950 hover:bg-green-400 active:bg-green-600',
+    'bg-crimson-bright text-white hover:bg-crimson hover:text-crimson-blood active:bg-crimson-deep border border-transparent',
   secondary:
-    'bg-neutral-800 text-neutral-100 hover:bg-neutral-700 active:bg-neutral-900 border border-neutral-700',
+    'bg-transparent text-ink hover:text-crimson border border-hairline-strong hover:border-crimson',
   ghost:
-    'bg-transparent text-neutral-300 hover:bg-neutral-900 active:bg-neutral-800',
+    'bg-transparent text-ink-faint hover:text-crimson border border-transparent',
   danger:
-    'bg-red-600 text-white hover:bg-red-500 active:bg-red-700',
+    'bg-transparent text-error hover:bg-error-container hover:text-white border border-error/40 hover:border-error',
 };
 
 const SIZES = {
-  sm: 'text-sm px-3 min-h-[40px]',
-  md: 'text-base px-5 min-h-[56px]',
-  lg: 'text-lg px-6 min-h-[64px]',
+  sm: 'text-[11px] px-4 min-h-10 tracking-[0.16em]',
+  md: 'text-[12px] px-6 min-h-12 tracking-[0.18em]',
+  lg: 'text-[13px] px-8 min-h-14 tracking-[0.2em]',
 };
 
 export default function Button({
@@ -26,10 +26,10 @@ export default function Button({
     <button
       type={type}
       className={[
-        'inline-flex items-center justify-center rounded-xl font-semibold',
-        'transition-colors select-none',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950',
-        'disabled:opacity-50 disabled:pointer-events-none',
+        'inline-flex items-center justify-center rounded font-semibold uppercase',
+        'transition-all duration-200 select-none',
+        'focus:outline-none focus-visible:ring-1 focus-visible:ring-crimson focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
+        'disabled:opacity-40 disabled:pointer-events-none',
         VARIANTS[variant],
         SIZES[size],
         className,

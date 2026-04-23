@@ -26,32 +26,35 @@ export default function App() {
   }, [toast]);
 
   return (
-    <div className="min-h-full bg-neutral-950 text-neutral-100">
-      <Routes>
-        <Route path="/" element={<Today toast={toast} />} />
-        <Route path="/workout" element={<Workout />} />
-        <Route path="/log" element={<Log setToast={setToast} />} />
-        <Route path="/history" element={<History />} />
-        <Route path="/session/:id" element={<SessionDetail />} />
-        <Route
-          path="/progress"
-          element={
-            <Suspense fallback={<ProgressLoading />}>
-              <Progress />
-            </Suspense>
-          }
-        />
-        <Route path="/plan" element={<Plan />} />
-        <Route path="/settings" element={<Settings setToast={setToast} />} />
-        <Route path="*" element={<Today toast={toast} />} />
-      </Routes>
+    <div className="crimson-atmos min-h-full bg-[var(--color-surface)] text-[var(--color-ink)]">
+      <div className="relative z-10">
+        <Routes>
+          <Route path="/" element={<Today toast={toast} />} />
+          <Route path="/workout" element={<Workout />} />
+          <Route path="/log" element={<Log setToast={setToast} />} />
+          <Route path="/history" element={<History />} />
+          <Route path="/session/:id" element={<SessionDetail />} />
+          <Route
+            path="/progress"
+            element={
+              <Suspense fallback={<ProgressLoading />}>
+                <Progress />
+              </Suspense>
+            }
+          />
+          <Route path="/plan" element={<Plan />} />
+          <Route path="/settings" element={<Settings setToast={setToast} />} />
+          <Route path="*" element={<Today toast={toast} />} />
+        </Routes>
+      </div>
       {showNav ? <BottomNav /> : null}
       {toast && location.pathname !== '/' ? (
         <div
           role="status"
           aria-live="polite"
-          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 rounded-xl bg-green-500/10 border border-green-500/40 text-green-400 px-4 py-2 text-sm backdrop-blur shadow-lg"
+          className="fixed bottom-28 left-1/2 -translate-x-1/2 z-40 label-md bg-[var(--color-surface-1)] text-[var(--color-crimson)] px-4 py-3 rounded border border-[var(--color-hairline-strong)]"
         >
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-[var(--color-crimson-bright)] mr-2 align-middle heartbeat" />
           {toast}
         </div>
       ) : null}
@@ -61,9 +64,13 @@ export default function App() {
 
 function ProgressLoading() {
   return (
-    <div className="min-h-full pt-safe pb-24 px-5 pt-10">
-      <h1 className="text-2xl font-semibold text-neutral-100">Progress</h1>
-      <p className="mt-2 text-sm text-neutral-500">Loading…</p>
+    <div className="min-h-full pt-safe pb-28 px-8 pt-16">
+      <div className="label-md text-[var(--color-ink-faint)]">Section · 03</div>
+      <h1 className="headline-lg mt-3">Progress</h1>
+      <div className="hairline mt-6" />
+      <p className="mt-6 label-md text-[var(--color-ink-faint)] heartbeat">
+        Loading the archive
+      </p>
     </div>
   );
 }

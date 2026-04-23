@@ -13,7 +13,6 @@ import {
   dismissExerciseProgression,
   dismissProgression,
   getActiveProgram,
-  getExerciseLevels,
   getLevels,
   getSessions,
   getState,
@@ -53,6 +52,9 @@ export default function Today({ toast }) {
     return sessions.filter((s) => (s.program || 'skip') === program).slice(0, 3);
   }, [sessions, program]);
 
+  const totalSessions = sessions.length;
+  const editionNumber = String(totalSessions + 1).padStart(3, '0');
+
   function handleProgramChange(next) {
     setProgram(next);
     setActiveProgram(next);
@@ -86,89 +88,141 @@ export default function Today({ toast }) {
   }
 
   return (
-    <div className="min-h-full pt-safe pb-24">
-      <header className="px-5 pt-8 pb-4 flex items-start justify-between gap-3">
-        <div>
-          <div className="text-sm text-neutral-500">{formatDateHeading()}</div>
-          <h1 className="mt-1 text-3xl font-semibold text-neutral-100">Pick a workout</h1>
+    <div className="min-h-full pt-safe pb-32">
+      {/* ============== MASTHEAD ============== */}
+      <header className="px-8 pt-12 pb-8">
+        <div className="flex items-center justify-between label-md text-ink-faint">
+          <span className="tracking-[0.32em] text-crimson">CRIMSON&nbsp;MIDNIGHT</span>
+          <span className="font-mono tabular tracking-[0.18em]">№&nbsp;{editionNumber}</span>
         </div>
-        <Link
-          to="/settings"
-          aria-label="Settings"
-          className="w-11 h-11 rounded-full flex items-center justify-center text-neutral-400 hover:bg-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
-        >
-          <SettingsIcon size={22} />
-        </Link>
+
+        <div className="hairline-strong mt-4" />
+
+        <div className="mt-8 flex items-start justify-between gap-6">
+          <div className="crimson-rise">
+            <div className="label-md text-ink-faint">{formatDateHeading()}</div>
+            <h1 className="headline-xl mt-3">
+              The <em className="italic font-light text-crimson">discipline</em>
+              <br />of today.
+            </h1>
+            <p className="mt-5 body-md text-ink-dim max-w-md">
+              A quiet ledger of effort. Choose your work, then let the room go silent.
+            </p>
+          </div>
+
+          <Link
+            to="/settings"
+            aria-label="Settings"
+            className="shrink-0 mt-2 w-11 h-11 rounded border border-hairline-strong/0 hover:border-hairline-strong flex items-center justify-center text-ink-faint hover:text-ink transition-colors focus:outline-none focus-visible:border-crimson"
+          >
+            <SettingsIcon size={20} strokeWidth={1.4} />
+          </Link>
+        </div>
       </header>
 
-      <div className="px-5 pb-4">
-        <ProgramSwitcher value={program} onChange={handleProgramChange} />
+      {/* ============== PROGRAM SWITCH ============== */}
+      <div className="px-8">
+        <div className="flex items-center justify-between gap-6">
+          <span className="label-md text-ink-faint">Program</span>
+          <span className="hairline flex-1" />
+          <ProgramSwitcher value={program} onChange={handleProgramChange} />
+        </div>
       </div>
 
       {toast ? (
         <div
           role="status"
           aria-live="polite"
-          className="mx-5 mb-4 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 px-4 py-3 text-sm"
+          className="mx-8 mt-6 px-5 py-4 bg-surface-1 border-l-2 border-crimson-bright label-md text-crimson"
         >
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-crimson-bright mr-3 align-middle heartbeat" />
           {toast}
         </div>
       ) : null}
 
-      {program === 'skip' ? (
-        <ProgressionBanner
-          suggestion={suggestion}
-          onAccept={acceptProgression}
-          onDismiss={dismissSuggestion}
-        />
-      ) : (
-        <ExerciseProgressionBanner
-          suggestion={pplSuggestion}
-          onAccept={acceptExerciseProgression}
-          onDismiss={dismissExerciseSuggestion}
-        />
-      )}
+      {/* ============== PROGRESSION ============== */}
+      <div className="mt-8">
+        {program === 'skip' ? (
+          <ProgressionBanner
+            suggestion={suggestion}
+            onAccept={acceptProgression}
+            onDismiss={dismissSuggestion}
+          />
+        ) : (
+          <ExerciseProgressionBanner
+            suggestion={pplSuggestion}
+            onAccept={acceptExerciseProgression}
+            onDismiss={dismissExerciseSuggestion}
+          />
+        )}
+      </div>
 
-      <section className="px-5 space-y-3">
-        {program === 'skip'
-          ? WORKOUT_TYPES.map((type) => (
-              <WorkoutCard
-                key={type}
-                type={type}
-                level={levels[type] ?? 1}
-                onClick={() => startWorkout(type, 'skip')}
-              />
-            ))
-          : PPL_TYPES.map((type) => (
-              <PPLWorkoutCard
-                key={type}
-                type={type}
-                onClick={() => startWorkout(type, 'ppl')}
-              />
-            ))}
+      {/* ============== WORKOUT FEATURES ============== */}
+      <section className="px-8 mt-10">
+        <div className="flex items-baseline justify-between gap-6 mb-6">
+          <h2 className="headline-md">Selections</h2>
+          <span className="font-mono text-[11px] tracking-[0.2em] text-ink-faint tabular">
+            {(program === 'skip' ? WORKOUT_TYPES : PPL_TYPES).length.toString().padStart(2, '0')}&nbsp;/&nbsp;FEATURES
+          </span>
+        </div>
+        <div className="space-y-px bg-hairline">
+          {program === 'skip'
+            ? WORKOUT_TYPES.map((type, i) => (
+                <WorkoutCard
+                  key={type}
+                  type={type}
+                  index={i + 1}
+                  level={levels[type] ?? 1}
+                  onClick={() => startWorkout(type, 'skip')}
+                />
+              ))
+            : PPL_TYPES.map((type, i) => (
+                <PPLWorkoutCard
+                  key={type}
+                  type={type}
+                  index={i + 1}
+                  onClick={() => startWorkout(type, 'ppl')}
+                />
+              ))}
+        </div>
       </section>
 
-      <section className="px-5 mt-10">
-        <div className="flex items-baseline justify-between mb-2">
-          <h2 className="text-sm uppercase tracking-wider text-neutral-500">
-            Last 3 sessions
-          </h2>
-          <Link to="/history" className="text-xs text-neutral-500 hover:text-neutral-300">
-            Show all
+      {/* ============== RECENT ============== */}
+      <section className="px-8 mt-16">
+        <div className="flex items-baseline justify-between mb-6 gap-6">
+          <h2 className="headline-md">From the archive</h2>
+          <Link
+            to="/history"
+            className="label-md text-ink-faint hover:text-crimson transition-colors"
+          >
+            All entries →
           </Link>
         </div>
+
         {recent.length === 0 ? (
-          <p className="text-sm text-neutral-500 py-6">
-            No sessions yet — pick a workout above to start.
-          </p>
-        ) : (
-          <div className="rounded-2xl bg-neutral-900 border border-neutral-800 px-4">
-            {recent.map((s) => (
-              <SessionListItem key={s.id} session={s} />
-            ))}
+          <div className="border border-hairline px-6 py-10 text-center">
+            <p className="font-serif italic text-ink-dim text-lg">
+              The page is blank.
+            </p>
+            <p className="mt-2 label-md text-ink-faint">
+              Begin a session to write the first entry.
+            </p>
           </div>
+        ) : (
+          <ol className="space-y-px bg-hairline">
+            {recent.map((s, i) => (
+              <SessionListItem key={s.id} session={s} index={recent.length - i} />
+            ))}
+          </ol>
         )}
       </section>
+
+      {/* ============== COLOPHON ============== */}
+      <footer className="px-8 mt-20 mb-8 flex items-center justify-between label-md text-ink-faint">
+        <span>Vol.&nbsp;I</span>
+        <span className="hairline flex-1 mx-6" />
+        <span className="font-mono tabular">{new Date().getFullYear()}</span>
+      </footer>
     </div>
   );
 }
