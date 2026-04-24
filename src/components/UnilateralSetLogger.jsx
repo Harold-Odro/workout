@@ -82,21 +82,24 @@ export default function UnilateralSetLogger({
   }
 
   return (
-    <div className="flex-1 flex flex-col px-5 pt-3 pb-5">
+    <div className="flex-1 flex flex-col px-6 pt-3 pb-5">
       <header className="flex items-start gap-2">
         <button
           onClick={onEditPrevious}
           disabled={setIndex === 0}
           aria-label="Previous set"
-          className="w-9 h-9 rounded-full flex items-center justify-center text-neutral-400 hover:bg-neutral-900 disabled:opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
+          className="w-9 h-9 flex items-center justify-center text-ink-faint hover:text-crimson disabled:opacity-30 transition-colors focus:outline-none focus-visible:text-crimson"
         >
-          <ArrowLeft size={18} />
+          <ArrowLeft size={18} strokeWidth={1.4} />
         </button>
         <div className="flex-1 min-w-0 pt-1">
-          <h2 className="text-lg font-semibold text-neutral-100 truncate leading-tight">
+          <div className="label-md text-ink-faint mb-1">
+            Set <span className="text-crimson tabular">{String(setIndex + 1).padStart(2, '0')}</span> · of {String(totalSets).padStart(2, '0')}
+          </div>
+          <h2 className="font-serif text-2xl text-ink truncate leading-tight">
             {exercise.name}
           </h2>
-          <div className="mt-1.5">
+          <div className="mt-2.5">
             <SetPips total={totalSets} completed={setIndex} current={setIndex} />
           </div>
         </div>
@@ -105,14 +108,14 @@ export default function UnilateralSetLogger({
             type="button"
             aria-label="Exercise options"
             onClick={() => setShowMenu((v) => !v)}
-            className="w-9 h-9 rounded-full flex items-center justify-center text-neutral-400 hover:bg-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
+            className="w-9 h-9 flex items-center justify-center text-ink-faint hover:text-crimson transition-colors focus:outline-none focus-visible:text-crimson"
           >
-            <MoreVertical size={18} />
+            <MoreVertical size={18} strokeWidth={1.4} />
           </button>
           {showMenu ? (
             <div
               onMouseLeave={() => setShowMenu(false)}
-              className="absolute right-0 mt-2 w-52 rounded-xl bg-neutral-900 border border-neutral-800 shadow-xl py-1 z-20"
+              className="absolute right-0 mt-2 w-56 rounded bg-surface-low border border-hairline-strong shadow-2xl py-1 z-20"
             >
               <MenuItem onClick={() => { setShowMenu(false); setShowCues((v) => !v); }}>
                 {showCues ? 'Hide form cues' : 'Show form cues'}
@@ -131,35 +134,35 @@ export default function UnilateralSetLogger({
         </div>
       </header>
 
-      <div className="mt-4 rounded-2xl bg-neutral-900 border border-neutral-800 p-3 flex items-stretch gap-3">
-        <div className="flex-1 min-w-0">
-          <div className="text-[10px] uppercase tracking-widest text-green-500">Target</div>
-          <div className="mt-0.5 text-base font-semibold text-neutral-100 truncate">
+      <div className="mt-5 flex items-stretch gap-0 border border-hairline">
+        <div className="flex-1 min-w-0 px-4 py-3">
+          <div className="label-md text-crimson">Target</div>
+          <div className="mt-1.5 font-serif text-lg text-ink truncate">
             {targetText || '—'}
           </div>
           {exercise.tempo ? (
-            <div className="text-[11px] text-neutral-500 mt-0.5 font-mono">
-              Tempo {exercise.tempo}
+            <div className="font-mono text-[11px] tabular text-ink-faint mt-1">
+              Tempo&nbsp;{exercise.tempo}
             </div>
           ) : null}
         </div>
-        <div className="w-px bg-neutral-800" />
-        <div className="flex-1 min-w-0 text-right">
-          <div className="text-[10px] uppercase tracking-widest text-neutral-500">Last time</div>
-          <div className="mt-0.5 font-mono text-sm text-neutral-300 truncate">
+        <div className="w-px bg-hairline-strong" />
+        <div className="flex-1 min-w-0 px-4 py-3 text-right">
+          <div className="label-md text-ink-faint">Last time</div>
+          <div className="mt-1.5 font-mono tabular text-sm text-ink-dim truncate">
             {lastText || '—'}
           </div>
         </div>
       </div>
 
       {showCues ? (
-        <div className="mt-2 rounded-xl bg-neutral-900/60 border border-neutral-800 p-3">
+        <div className="mt-3 bg-surface-low border border-hairline px-4 py-3">
           <FormCueList cues={exercise.formCues} compact />
         </div>
       ) : null}
 
       {loggedSets.length > 0 ? (
-        <div className="mt-4">
+        <div className="mt-5">
           <LoggedSetsStrip sets={loggedSets} totalSets={totalSets} />
         </div>
       ) : null}
@@ -171,7 +174,7 @@ export default function UnilateralSetLogger({
         onReps={setLeftReps}
         onWeight={setLeftWeight}
       />
-      <div className="mt-3">
+      <div className="mt-4">
         <Side
           label="Right"
           reps={rightReps}
@@ -182,7 +185,7 @@ export default function UnilateralSetLogger({
             <button
               type="button"
               onClick={mirrorLeftToRight}
-              className="text-[11px] text-neutral-500 hover:text-neutral-300 px-2 py-1"
+              className="label-md text-ink-faint hover:text-crimson px-2 py-1 transition-colors"
             >
               Same as left
             </button>
@@ -191,14 +194,14 @@ export default function UnilateralSetLogger({
       </div>
 
       {isLastSet ? (
-        <div className="mt-5">
+        <div className="mt-6">
           <RPEChips value={rpe} onChange={setRpe} />
         </div>
       ) : null}
 
       <div className="mt-auto pt-6">
-        <Button variant="primary" size="lg" className="w-full text-lg" onClick={handleLog}>
-          Log set {setIndex + 1}
+        <Button variant="primary" size="lg" className="w-full" onClick={handleLog}>
+          Log set {String(setIndex + 1).padStart(2, '0')}
         </Button>
       </div>
     </div>
@@ -207,9 +210,9 @@ export default function UnilateralSetLogger({
 
 function Side({ label, reps, weight, onReps, onWeight, action }) {
   return (
-    <div className="mt-3">
-      <div className="flex items-baseline justify-between mb-1.5">
-        <span className="text-[11px] uppercase tracking-widest text-neutral-500">{label}</span>
+    <div className="mt-4">
+      <div className="flex items-baseline justify-between mb-2">
+        <span className="label-md text-crimson">{label}</span>
         {action}
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -243,8 +246,8 @@ function MenuItem({ children, onClick, danger }) {
     <button
       onClick={onClick}
       className={[
-        'w-full text-left px-3 py-2.5 text-sm',
-        danger ? 'text-red-400 hover:bg-red-500/10' : 'text-neutral-200 hover:bg-neutral-800',
+        'w-full text-left px-4 py-3 font-serif text-[15px] transition-colors',
+        danger ? 'text-error hover:bg-error-container/40' : 'text-ink hover:bg-surface-high hover:text-crimson',
       ].join(' ')}
     >
       {children}

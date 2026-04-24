@@ -30,37 +30,39 @@ export default function ExerciseLevelLadder({
   const currentCfg = getExerciseConfig(exercise.id, currentLevel);
 
   return (
-    <div className="rounded-xl bg-neutral-900 border border-neutral-800">
+    <div className="bg-surface-1 border border-hairline">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 rounded-xl"
+        className="w-full flex items-center justify-between px-5 py-4 text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-crimson"
         aria-expanded={open}
       >
         <div className="min-w-0 flex-1">
-          <div className="flex items-baseline gap-2">
-            <span className="text-sm font-semibold text-neutral-100 truncate">
+          <div className="flex items-baseline gap-3">
+            <span className="font-serif text-lg text-ink truncate leading-none">
               {exercise.name}
             </span>
-            <span className="text-xs font-mono text-green-500 shrink-0">L{currentLevel}</span>
+            <span className="font-mono text-[10px] tabular tracking-[0.18em] text-crimson shrink-0">
+              LVL&nbsp;{String(currentLevel).padStart(2, '0')}
+            </span>
           </div>
-          <div className="mt-0.5 text-xs text-neutral-500 truncate">{describeCfg(currentCfg)}</div>
+          <div className="mt-1.5 font-mono text-[12px] tabular text-ink-faint truncate">{describeCfg(currentCfg)}</div>
           {currentLevel < MAX_PPL_LEVEL ? (
-            <div className="mt-1 text-xs text-green-500">
-              {count}/{PPL_PROGRESSION_RULES.sessionsRequired} successes to progress
+            <div className="mt-2 label-md text-crimson tabular">
+              {count}/{PPL_PROGRESSION_RULES.sessionsRequired}&nbsp;successes&nbsp;·&nbsp;to progress
             </div>
           ) : (
-            <div className="mt-1 text-xs text-neutral-500">Max level</div>
+            <div className="mt-2 label-md text-ink-faint">Max level</div>
           )}
         </div>
         {open ? (
-          <ChevronUp size={18} className="text-neutral-500 shrink-0 ml-2" />
+          <ChevronUp size={16} strokeWidth={1.4} className="text-ink-faint shrink-0 ml-3" />
         ) : (
-          <ChevronDown size={18} className="text-neutral-500 shrink-0 ml-2" />
+          <ChevronDown size={16} strokeWidth={1.4} className="text-ink-faint shrink-0 ml-3" />
         )}
       </button>
       {open ? (
-        <div className="px-3 pb-3 space-y-2">
+        <div className="px-3 pb-3 space-y-px bg-hairline border-t border-hairline">
           {ladder.map((cfg) => {
             const isCurrent = cfg.level === currentLevel;
             const isPast = cfg.level < currentLevel;
@@ -71,28 +73,28 @@ export default function ExerciseLevelLadder({
                 type="button"
                 onClick={() => onSelectLevel(cfg.level)}
                 className={[
-                  'w-full text-left rounded-lg border px-3 py-2 flex items-center gap-3',
+                  'w-full text-left px-4 py-3 flex items-center gap-3 transition-colors',
                   isCurrent
-                    ? 'border-green-500/60 bg-green-500/10'
-                    : isPast
-                    ? 'border-neutral-800 bg-neutral-900/60'
-                    : 'border-neutral-800 bg-neutral-900 hover:border-neutral-600',
+                    ? 'bg-surface-low border-l-2 border-crimson-bright'
+                    : 'bg-surface-1 border-l-2 border-transparent hover:bg-surface-high',
                 ].join(' ')}
               >
                 <div
                   className={[
-                    'w-7 h-7 rounded-full flex items-center justify-center shrink-0 font-mono text-xs',
+                    'w-7 h-7 rounded-full flex items-center justify-center shrink-0 font-mono tabular text-[10px]',
                     isCurrent
-                      ? 'bg-green-500 text-neutral-950'
-                      : 'bg-neutral-800 text-neutral-500',
+                      ? 'bg-crimson-bright text-white'
+                      : isPast
+                      ? 'bg-surface-high text-ink-dim'
+                      : 'border border-hairline-strong text-ink-faint',
                   ].join(' ')}
                   aria-hidden
                 >
-                  {isPast ? <Check size={12} /> : isFuture ? <Lock size={10} /> : cfg.level}
+                  {isPast ? <Check size={12} strokeWidth={2} /> : isFuture ? <Lock size={10} strokeWidth={1.6} /> : String(cfg.level).padStart(2, '0')}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs font-semibold text-neutral-100">Level {cfg.level}</div>
-                  <div className="text-[11px] text-neutral-400 truncate">{describeCfg(cfg)}</div>
+                  <div className="font-serif text-base text-ink leading-none">Level {cfg.level}</div>
+                  <div className="mt-1 font-mono text-[11px] tabular text-ink-faint truncate">{describeCfg(cfg)}</div>
                 </div>
               </button>
             );

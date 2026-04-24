@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
 import SkipPhaseRunner from '../components/SkipPhaseRunner.jsx';
@@ -56,16 +56,16 @@ export default function SkipWorkoutFlow({ type }) {
 
   return (
     <div className="min-h-full flex flex-col pt-safe pb-safe">
-      <header className="flex items-center justify-between px-4 pt-3">
+      <header className="flex items-center justify-between px-5 pt-3">
         <button
           onClick={() => setConfirmExit(true)}
           aria-label="Exit workout"
-          className="w-11 h-11 rounded-full flex items-center justify-center text-neutral-400 hover:bg-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
+          className="w-11 h-11 flex items-center justify-center text-ink-faint hover:text-crimson transition-colors focus:outline-none focus-visible:text-crimson"
         >
-          <X size={22} />
+          <X size={22} strokeWidth={1.4} />
         </button>
-        <div className="text-xs text-neutral-500 font-mono">
-          {workout.name} · L{level}
+        <div className="font-mono text-[10px] tabular tracking-[0.2em] uppercase text-ink-faint">
+          {workout.name}&nbsp;·&nbsp;<span className="text-crimson">LVL&nbsp;{String(level).padStart(2, '0')}</span>
         </div>
       </header>
 
@@ -91,13 +91,15 @@ export default function SkipWorkoutFlow({ type }) {
 
 function ExitConfirm({ onKeep, onSaveSkipped, onExit }) {
   return (
-    <div className="fixed inset-0 z-30 bg-black/70 flex items-end sm:items-center justify-center p-4">
-      <div className="w-full max-w-sm rounded-2xl bg-neutral-900 border border-neutral-800 p-5">
-        <h3 className="text-lg font-semibold text-neutral-100">Exit workout?</h3>
-        <p className="mt-1 text-sm text-neutral-400">
-          You can log this as a skipped session or exit without saving.
+    <div className="fixed inset-0 z-30 bg-black/80 backdrop-blur flex items-end sm:items-center justify-center p-4">
+      <div className="w-full max-w-sm bg-surface-low border border-hairline-strong p-6">
+        <div className="label-md text-crimson tracking-[0.32em]">◆&nbsp;&nbsp;Exit</div>
+        <h3 className="mt-3 font-serif text-2xl text-ink leading-tight">Leave this workout?</h3>
+        <p className="mt-3 body-md text-ink-dim">
+          Save this as a skipped session, or exit without saving.
         </p>
-        <div className="mt-4 space-y-2">
+        <div className="hairline mt-5" />
+        <div className="mt-5 space-y-2">
           <Button variant="secondary" size="md" className="w-full" onClick={onKeep}>
             Keep going
           </Button>

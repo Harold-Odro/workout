@@ -11,7 +11,7 @@ export default function CompactStepper({
   decimals = 0,
   inputMode = 'numeric',
   ariaLabel,
-  accent = 'text-neutral-100',
+  accent = 'text-ink',
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
@@ -42,14 +42,14 @@ export default function CompactStepper({
   const display = decimals > 0 ? Number(value ?? 0).toFixed(decimals) : String(value ?? 0);
 
   return (
-    <div className="flex items-stretch overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-950">
+    <div className="flex items-stretch overflow-hidden rounded border border-hairline-strong bg-surface-low focus-within:border-crimson transition-colors">
       <button
         type="button"
         onClick={() => nudge(-step)}
         aria-label={ariaLabel ? `Decrease ${ariaLabel}` : 'Decrease'}
-        className="w-14 flex items-center justify-center text-neutral-300 bg-neutral-900 active:bg-neutral-800 focus:outline-none focus-visible:bg-neutral-800"
+        className="w-14 flex items-center justify-center text-ink-faint hover:text-crimson transition-colors active:bg-surface-high focus:outline-none focus-visible:bg-surface-high"
       >
-        <Minus size={22} />
+        <Minus size={20} strokeWidth={1.4} />
       </button>
       {editing ? (
         <input
@@ -64,7 +64,7 @@ export default function CompactStepper({
             if (e.key === 'Escape') setEditing(false);
           }}
           className={[
-            'flex-1 text-center font-mono font-bold text-4xl bg-transparent outline-none',
+            'flex-1 text-center font-serif font-light text-4xl tabular bg-transparent outline-none',
             accent,
           ].join(' ')}
           aria-label={ariaLabel}
@@ -75,22 +75,22 @@ export default function CompactStepper({
           onClick={startEditing}
           aria-label={`${ariaLabel || 'Value'}: ${display}${suffix}. Tap to edit.`}
           className={[
-            'flex-1 flex items-baseline justify-center gap-1 font-mono font-bold text-4xl py-3',
+            'flex-1 flex items-baseline justify-center gap-1 font-serif font-light text-4xl tabular py-3',
             accent,
             'focus:outline-none',
           ].join(' ')}
         >
           <span>{display}</span>
-          {suffix ? <span className="text-base text-neutral-500 font-semibold">{suffix}</span> : null}
+          {suffix ? <span className="text-sm text-ink-faint font-mono uppercase tracking-widest">{suffix}</span> : null}
         </button>
       )}
       <button
         type="button"
         onClick={() => nudge(step)}
         aria-label={ariaLabel ? `Increase ${ariaLabel}` : 'Increase'}
-        className="w-14 flex items-center justify-center text-neutral-300 bg-neutral-900 active:bg-neutral-800 focus:outline-none focus-visible:bg-neutral-800"
+        className="w-14 flex items-center justify-center text-ink-faint hover:text-crimson transition-colors active:bg-surface-high focus:outline-none focus-visible:bg-surface-high"
       >
-        <Plus size={22} />
+        <Plus size={20} strokeWidth={1.4} />
       </button>
     </div>
   );

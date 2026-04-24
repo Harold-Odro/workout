@@ -6,15 +6,17 @@ export default function SettingsRow({ title, description, children, onClick, as 
       type={interactive ? 'button' : undefined}
       onClick={onClick}
       className={[
-        'w-full text-left rounded-xl bg-neutral-900 border border-neutral-800 px-4 py-3',
-        'flex items-center justify-between gap-3',
-        interactive ? 'hover:border-neutral-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500' : '',
+        'w-full text-left bg-surface-1 px-5 py-4',
+        'flex items-center justify-between gap-4',
+        interactive ? 'hover:bg-surface-high transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-crimson' : '',
       ].join(' ')}
     >
       <div className="min-w-0">
-        <div className="text-sm text-neutral-100">{title}</div>
+        <div className="font-serif text-base text-ink leading-tight">{title}</div>
         {description ? (
-          <div className="mt-0.5 text-xs text-neutral-500">{description}</div>
+          <div className="mt-1 text-[13px] text-ink-faint font-sans">
+            {description}
+          </div>
         ) : null}
       </div>
       {children ? <div className="shrink-0">{children}</div> : null}

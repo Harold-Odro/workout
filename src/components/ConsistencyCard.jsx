@@ -16,48 +16,48 @@ export default function ConsistencyCard({ sessions }) {
   const hasData = data.some((d) => d.sessions > 0);
 
   return (
-    <div className="rounded-2xl bg-neutral-900 border border-neutral-800 p-4">
-      <div className="flex items-baseline justify-between mb-3">
-        <h2 className="text-sm uppercase tracking-wider text-neutral-500">
-          Consistency
-        </h2>
-        <span className="text-xs text-neutral-500">
-          sessions/week · last 12 weeks
-        </span>
+    <div className="tonal p-6">
+      <div className="eyebrow">
+        <h2>Consistency</h2>
+        <span className="meta">Sessions · 12&nbsp;wk</span>
       </div>
-      <div className="flex items-end gap-2">
-        <div className="font-mono text-5xl font-bold text-green-500 leading-none">
+      <div className="hairline mb-5" />
+
+      <div className="flex items-end gap-3">
+        <div className="font-serif text-7xl font-light text-crimson tabular leading-none">
           {streak}
         </div>
-        <div className="text-xs text-neutral-400 pb-1">
-          week{streak === 1 ? '' : 's'} streak
+        <div className="label-md text-ink-faint pb-2">
+          week{streak === 1 ? '' : 's'}<br />in a row
         </div>
       </div>
+
       {!hasData ? (
-        <p className="mt-4 text-sm text-neutral-500 py-4 text-center">
+        <p className="mt-6 font-serif italic text-ink-dim text-center py-2">
           No sessions yet.
         </p>
       ) : (
-        <div className="mt-4" style={{ width: '100%', height: 80 }}>
+        <div className="mt-6" style={{ width: '100%', height: 80 }}>
           <ResponsiveContainer>
             <LineChart data={data} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
               <XAxis dataKey="label" hide />
               <Tooltip
-                cursor={{ stroke: '#262626' }}
+                cursor={{ stroke: 'rgba(255,82,93,0.4)', strokeDasharray: '2 2' }}
                 contentStyle={{
-                  background: '#0a0a0a',
-                  border: '1px solid #262626',
-                  borderRadius: 8,
-                  color: '#e5e5e5',
+                  background: '#0c0e0f',
+                  border: '1px solid rgba(255,255,255,0.16)',
+                  borderRadius: 4,
+                  color: '#e2e2e3',
                   fontSize: 12,
+                  fontFamily: 'Inter',
                 }}
                 formatter={(value) => [value, 'Sessions']}
-                labelStyle={{ color: '#a3a3a3' }}
+                labelStyle={{ color: '#8a8a8c', textTransform: 'uppercase', letterSpacing: '0.16em', fontSize: 10 }}
               />
               <Line
                 type="monotone"
                 dataKey="sessions"
-                stroke="#22c55e"
+                stroke="#ff525d"
                 strokeWidth={2}
                 dot={false}
               />

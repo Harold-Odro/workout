@@ -28,8 +28,8 @@ function Toggle({ checked, onChange, label }) {
       onClick={() => onChange(!checked)}
       className={[
         'relative w-11 h-6 rounded-full transition-colors',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500',
-        checked ? 'bg-green-500' : 'bg-neutral-700',
+        'focus:outline-none focus-visible:ring-1 focus-visible:ring-crimson focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
+        checked ? 'bg-crimson-bright' : 'bg-surface-high',
       ].join(' ')}
     >
       <span
@@ -45,7 +45,7 @@ function Toggle({ checked, onChange, label }) {
 export default function Settings({ setToast }) {
   const navigate = useNavigate();
   const [settings, setSettings] = useState(() => getSettings());
-  const [confirm, setConfirm] = useState(null); // 'clear' | 'import' | null
+  const [confirm, setConfirm] = useState(null);
   const [pendingImport, setPendingImport] = useState(null);
   const fileInputRef = useRef(null);
 
@@ -100,22 +100,31 @@ export default function Settings({ setToast }) {
   }
 
   return (
-    <div className="min-h-full pt-safe pb-24">
-      <header className="px-5 pt-6 flex items-center gap-3">
+    <div className="min-h-full pt-safe pb-32">
+      <header className="px-8 pt-12 flex items-start gap-4">
         <button
           onClick={() => navigate(-1)}
           aria-label="Back"
-          className="w-10 h-10 rounded-full flex items-center justify-center text-neutral-400 hover:bg-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
+          className="w-10 h-10 flex items-center justify-center text-ink-faint hover:text-crimson transition-colors focus:outline-none focus-visible:text-crimson"
         >
-          <ArrowLeft size={20} />
+          <ArrowLeft size={20} strokeWidth={1.4} />
         </button>
-        <h1 className="text-2xl font-semibold text-neutral-100">Settings</h1>
+        <div className="flex-1">
+          <div className="label-md text-crimson tracking-[0.32em]">◆&nbsp;&nbsp;Colophon</div>
+          <h1 className="mt-3 font-serif text-4xl font-light text-ink leading-tight">
+            Settings
+          </h1>
+          <div className="hairline-strong mt-6" />
+        </div>
       </header>
 
-      <div className="px-5 mt-6 space-y-6">
+      <div className="px-8 mt-10 space-y-10">
         <section>
-          <h2 className="text-xs uppercase tracking-wider text-neutral-500 mb-2">Workout</h2>
-          <div className="space-y-2">
+          <div className="flex items-center gap-4 mb-4">
+            <h2 className="label-md text-crimson tracking-[0.2em]">Workout</h2>
+            <span className="hairline flex-1" />
+          </div>
+          <div className="space-y-px bg-hairline">
             <SettingsRow title="Audio cues" description="Beeps during countdown and phase changes">
               <Toggle
                 label="Audio cues"
@@ -134,15 +143,18 @@ export default function Settings({ setToast }) {
         </section>
 
         <section>
-          <h2 className="text-xs uppercase tracking-wider text-neutral-500 mb-2">Data</h2>
-          <div className="space-y-2">
+          <div className="flex items-center gap-4 mb-4">
+            <h2 className="label-md text-crimson tracking-[0.2em]">Data</h2>
+            <span className="hairline flex-1" />
+          </div>
+          <div className="space-y-px bg-hairline">
             <SettingsRow
               as="button"
               title="Export data"
-              description="Download all sessions + settings as JSON"
+              description="Download all sessions and settings as JSON"
               onClick={handleExport}
             >
-              <Download size={18} className="text-neutral-500" aria-hidden />
+              <Download size={16} strokeWidth={1.4} className="text-ink-faint" aria-hidden />
             </SettingsRow>
             <SettingsRow
               as="button"
@@ -150,7 +162,7 @@ export default function Settings({ setToast }) {
               description="Merge or replace from a previous export"
               onClick={handleImportClick}
             >
-              <Upload size={18} className="text-neutral-500" aria-hidden />
+              <Upload size={16} strokeWidth={1.4} className="text-ink-faint" aria-hidden />
             </SettingsRow>
             <SettingsRow
               as="button"
@@ -158,14 +170,25 @@ export default function Settings({ setToast }) {
               description="Permanently delete every session and setting"
               onClick={() => setConfirm('clear')}
             >
-              <Trash2 size={18} className="text-red-500" aria-hidden />
+              <Trash2 size={16} strokeWidth={1.4} className="text-error" aria-hidden />
             </SettingsRow>
           </div>
         </section>
 
         <section>
-          <h2 className="text-xs uppercase tracking-wider text-neutral-500 mb-2">About</h2>
-          <SettingsRow title="Skip Tracker" description={`Version ${APP_VERSION}`} />
+          <div className="flex items-center gap-4 mb-4">
+            <h2 className="label-md text-crimson tracking-[0.2em]">About</h2>
+            <span className="hairline flex-1" />
+          </div>
+          <div className="bg-surface-1 px-5 py-5">
+            <div className="font-serif text-2xl text-ink leading-tight">Build At Home</div>
+            <div className="mt-2 font-mono text-[12px] tabular text-ink-faint tracking-[0.18em] uppercase">
+              Version&nbsp;{APP_VERSION}
+            </div>
+            <p className="mt-4 font-serif italic text-ink-dim text-sm leading-relaxed">
+              A quiet ledger for skipping intervals and push/pull/legs strength work.
+            </p>
+          </div>
         </section>
       </div>
 
@@ -201,11 +224,13 @@ export default function Settings({ setToast }) {
 
 function Modal({ title, body, onCancel, primary, secondary }) {
   return (
-    <div className="fixed inset-0 z-30 bg-black/70 flex items-end sm:items-center justify-center p-4">
-      <div className="w-full max-w-sm rounded-2xl bg-neutral-900 border border-neutral-800 p-5">
-        <h3 className="text-lg font-semibold text-neutral-100">{title}</h3>
-        <p className="mt-1 text-sm text-neutral-400">{body}</p>
-        <div className="mt-4 space-y-2">
+    <div className="fixed inset-0 z-30 bg-black/80 backdrop-blur flex items-end sm:items-center justify-center p-4">
+      <div className="w-full max-w-sm bg-surface-low border border-hairline-strong p-6">
+        <div className="label-md text-crimson tracking-[0.32em]">◆&nbsp;&nbsp;Confirm</div>
+        <h3 className="mt-3 font-serif text-2xl text-ink leading-tight">{title}</h3>
+        <p className="mt-3 body-md text-ink-dim">{body}</p>
+        <div className="hairline mt-5" />
+        <div className="mt-5 space-y-2">
           <Button variant={primary.variant} size="md" className="w-full" onClick={primary.onClick}>
             {primary.label}
           </Button>

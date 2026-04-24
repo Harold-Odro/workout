@@ -5,11 +5,11 @@ import { computeHeatmap } from '../lib/analytics.js';
 const ROW_LABELS = ['Mon', '', 'Wed', '', 'Fri', '', 'Sun'];
 
 const INTENSITY_CLASS = {
-  0: 'bg-neutral-900',
-  1: 'bg-green-500/25',
-  2: 'bg-green-500/50',
-  3: 'bg-green-500/75',
-  4: 'bg-green-500',
+  0: 'bg-surface-high',
+  1: 'bg-crimson-blood/40',
+  2: 'bg-crimson-deep/70',
+  3: 'bg-crimson-bright/80',
+  4: 'bg-crimson-bright',
 };
 
 export default function CalendarHeatmap({ sessions, weeks = 12, selectedDate, onSelect }) {
@@ -18,7 +18,7 @@ export default function CalendarHeatmap({ sessions, weeks = 12, selectedDate, on
   return (
     <div className="w-full overflow-x-auto">
       <div className="inline-flex gap-2 min-w-full">
-        <div className="flex flex-col gap-1 pt-1 text-[10px] text-neutral-600">
+        <div className="flex flex-col gap-1 pt-1 font-mono text-[9px] tracking-[0.18em] uppercase text-ink-faint">
           {ROW_LABELS.map((l, i) => (
             <div key={i} className="h-4 leading-4">{l}</div>
           ))}
@@ -41,11 +41,11 @@ export default function CalendarHeatmap({ sessions, weeks = 12, selectedDate, on
                         : format(parseISO(cell.date), 'MMM d')
                     }
                     className={[
-                      'w-4 h-4 rounded-sm',
+                      'w-4 h-4 transition-all',
                       cell.inFuture ? 'opacity-30' : '',
                       INTENSITY_CLASS[cell.intensity],
-                      isSelected ? 'ring-2 ring-green-400 ring-offset-1 ring-offset-neutral-950' : '',
-                      clickable ? 'hover:ring-1 hover:ring-green-400' : '',
+                      isSelected ? 'outline-1 outline-crimson outline-offset-1' : '',
+                      clickable ? 'hover:outline-1 hover:outline-crimson/60' : '',
                     ].join(' ')}
                   />
                 );
@@ -54,12 +54,12 @@ export default function CalendarHeatmap({ sessions, weeks = 12, selectedDate, on
           ))}
         </div>
       </div>
-      <div className="mt-3 flex items-center justify-end gap-2 text-[10px] text-neutral-500">
-        <span>Less</span>
+      <div className="mt-4 flex items-center justify-end gap-2 label-md text-ink-faint">
+        <span className="opacity-70">Less</span>
         {[0, 1, 2, 3, 4].map((i) => (
-          <span key={i} className={`w-3 h-3 rounded-sm ${INTENSITY_CLASS[i]}`} />
+          <span key={i} className={`w-3 h-3 ${INTENSITY_CLASS[i]}`} />
         ))}
-        <span>More</span>
+        <span className="opacity-70">More</span>
       </div>
     </div>
   );

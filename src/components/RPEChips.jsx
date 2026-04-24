@@ -2,9 +2,9 @@ export default function RPEChips({ value, onChange, label = 'Per-set RPE' }) {
   const options = Array.from({ length: 10 }, (_, i) => i + 1);
   return (
     <div>
-      <div className="flex items-baseline justify-between mb-2">
-        <span className="text-[11px] uppercase tracking-widest text-neutral-500">{label}</span>
-        <span className="text-xs text-neutral-500">
+      <div className="flex items-baseline justify-between mb-3">
+        <span className="label-md text-ink-faint">{label}</span>
+        <span className="font-serif italic text-sm text-ink-dim">
           {value ? intensityWord(value) : 'optional'}
         </span>
       </div>
@@ -15,6 +15,7 @@ export default function RPEChips({ value, onChange, label = 'Per-set RPE' }) {
       >
         {options.map((n) => {
           const active = value === n;
+          const intense = n > 7;
           return (
             <button
               key={n}
@@ -23,13 +24,13 @@ export default function RPEChips({ value, onChange, label = 'Per-set RPE' }) {
               aria-checked={active}
               onClick={() => onChange(active ? 0 : n)}
               className={[
-                'h-8 rounded-md text-xs font-mono font-semibold transition-colors',
-                'focus:outline-none focus-visible:ring-1 focus-visible:ring-green-500',
+                'h-10 rounded-sm font-mono text-xs font-semibold tabular transition-all',
+                'focus:outline-none focus-visible:ring-1 focus-visible:ring-crimson',
                 active
-                  ? 'bg-green-500 text-neutral-950'
-                  : n > 7
-                  ? 'bg-neutral-900 text-neutral-300 border border-neutral-800 hover:bg-neutral-800'
-                  : 'bg-neutral-900 text-neutral-500 border border-neutral-800 hover:bg-neutral-800',
+                  ? 'bg-crimson-bright text-white border border-transparent'
+                  : intense
+                  ? 'bg-transparent text-ink-dim border border-hairline-strong hover:border-crimson hover:text-crimson'
+                  : 'bg-transparent text-ink-faint border border-hairline hover:border-hairline-strong hover:text-ink',
               ].join(' ')}
             >
               {n}

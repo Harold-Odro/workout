@@ -1,9 +1,9 @@
 export default function ProgressRing({
-  progress,        // 0..1
+  progress,
   size = 320,
-  stroke = 10,
-  color = '#22c55e',
-  trackColor = '#262626',
+  stroke = 2,
+  color = '#ff525d',
+  trackColor = 'rgba(255,255,255,0.08)',
   children,
 }) {
   const r = (size - stroke) / 2;
@@ -29,7 +29,7 @@ export default function ProgressRing({
           stroke={color}
           strokeWidth={stroke}
           fill="none"
-          strokeLinecap="round"
+          strokeLinecap="butt"
           strokeDasharray={c}
           strokeDashoffset={offset}
           className="progress-ring-fg"

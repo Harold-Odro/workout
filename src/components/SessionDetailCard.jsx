@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { WORKOUT_META } from '../lib/workouts.js';
 import { PPL_META } from '../lib/workoutsPPL.js';
 import { formatDateShort, formatDuration } from '../lib/time.js';
@@ -26,40 +26,40 @@ export default function SessionDetailCard({ session }) {
   return (
     <Link
       to={`/session/${session.id}`}
-      className={[
-        'flex items-center gap-3 px-4 py-3 rounded-xl',
-        'bg-neutral-900 border border-neutral-800',
-        'hover:border-green-500/40 transition-colors',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500',
-      ].join(' ')}
+      className="group flex items-center gap-4 px-5 py-4 bg-surface-1 hover:bg-surface-high transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-crimson"
     >
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-neutral-100 truncate">
+        <div className="flex items-center gap-2.5">
+          <span className="font-serif text-lg text-ink truncate leading-tight">
             {meta?.name || session.type}
           </span>
           <span
             className={[
-              'text-[10px] font-mono uppercase px-1.5 py-0.5 rounded',
-              isPPL ? 'bg-blue-500/15 text-blue-400' : 'bg-green-500/15 text-green-400',
+              'font-mono text-[9px] tracking-[0.2em] uppercase px-1.5 py-0.5 rounded-sm',
+              isPPL
+                ? 'bg-surface-high text-ink-dim'
+                : 'bg-crimson-blood/40 text-crimson',
             ].join(' ')}
           >
-            {isPPL ? 'PPL' : 'skip'}
+            {isPPL ? 'PPL' : 'SKIP'}
           </span>
           {session.skipped ? (
-            <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-500">
-              skipped
+            <span className="font-mono text-[9px] tracking-[0.2em] uppercase px-1.5 py-0.5 rounded-sm bg-surface-high text-ink-faint">
+              SKIPPED
             </span>
           ) : null}
         </div>
-        <div className="mt-0.5 text-xs text-neutral-500">{detailLine(session)}</div>
+        <div className="mt-1 label-md text-ink-faint tabular">{detailLine(session)}</div>
       </div>
       {session.rpe ? (
-        <div className="text-xs font-mono px-2 py-1 rounded-md bg-neutral-800 text-neutral-300">
-          RPE {session.rpe}
+        <div className="text-right">
+          <div className="label-md text-ink-faint">RPE</div>
+          <div className="font-mono tabular text-lg text-crimson leading-none mt-0.5">
+            {session.rpe}
+          </div>
         </div>
       ) : null}
-      <ChevronRight size={18} className="text-neutral-600" aria-hidden />
+      <ArrowUpRight size={18} strokeWidth={1.4} className="text-ink-faint group-hover:text-crimson transition-colors" aria-hidden />
     </Link>
   );
 }

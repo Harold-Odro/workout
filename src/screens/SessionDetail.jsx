@@ -18,7 +18,7 @@ export default function SessionDetail() {
   const navigate = useNavigate();
   const [session, setSession] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [editSet, setEditSet] = useState(null); // { exerciseId, setIndex }
+  const [editSet, setEditSet] = useState(null);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -30,10 +30,10 @@ export default function SessionDetail() {
 
   if (!session) {
     return (
-      <div className="min-h-full pt-safe pb-24 px-5 pt-10 text-center">
-        <p className="text-neutral-500">Session not found.</p>
-        <Link to="/history" className="mt-4 inline-block text-green-500">
-          Back to history
+      <div className="min-h-full pt-safe pb-32 px-8 pt-16 text-center">
+        <p className="font-serif italic text-ink-dim text-lg">Session not found.</p>
+        <Link to="/history" className="mt-6 inline-block label-md text-crimson hover:text-crimson-bright">
+          ← Back to history
         </Link>
       </div>
     );
@@ -80,57 +80,64 @@ export default function SessionDetail() {
     : 0;
 
   return (
-    <div className="min-h-full pt-safe pb-24">
-      <header className="px-5 pt-6 flex items-center gap-3">
+    <div className="min-h-full pt-safe pb-32">
+      <header className="px-8 pt-12 flex items-start gap-4">
         <button
           onClick={() => navigate(-1)}
           aria-label="Back"
-          className="w-10 h-10 rounded-full flex items-center justify-center text-neutral-400 hover:bg-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
+          className="w-10 h-10 flex items-center justify-center text-ink-faint hover:text-crimson transition-colors focus:outline-none focus-visible:text-crimson"
         >
-          <ArrowLeft size={20} />
+          <ArrowLeft size={20} strokeWidth={1.4} />
         </button>
-        <div>
-          <div className="text-xs uppercase tracking-widest text-green-500">
-            {isPPL ? 'PPL session' : 'Skip session'}
+        <div className="flex-1">
+          <div className="label-md text-crimson tracking-[0.32em]">
+            {isPPL ? 'PPL · Session' : 'Skip · Session'}
           </div>
-          <h1 className="text-xl font-semibold text-neutral-100">
+          <h1 className="mt-3 font-serif text-4xl font-light text-ink leading-tight">
             {meta?.name || session.type}
           </h1>
+          <div className="hairline-strong mt-6" />
         </div>
       </header>
 
-      <div className="px-5 mt-6 space-y-3">
+      <div className="px-8 mt-8 space-y-px bg-hairline">
         <Stat label="Date" value={formatDateShort(session.date)} />
-        <Stat label="Duration" value={formatDuration(session.durationSeconds)} />
+        <Stat label="Duration" value={formatDuration(session.durationSeconds)} mono />
         {!isPPL ? (
           <Stat
             label="Rounds"
             value={`${session.completedRounds} / ${session.plannedRounds}`}
+            mono
           />
         ) : (
           <Stat label="Sets completed" value={totalSets} mono />
         )}
         {typeof session.rpe === 'number' && session.rpe > 0 ? (
-          <Stat label="RPE" value={session.rpe} mono />
+          <Stat label="RPE" value={session.rpe} mono accent />
         ) : null}
         {session.skipped ? <Stat label="Status" value="Skipped" /> : null}
-        {session.notes ? (
-          <div className="rounded-xl bg-neutral-900 border border-neutral-800 px-4 py-3">
-            <div className="text-xs uppercase tracking-widest text-neutral-500 mb-1">
-              Notes
-            </div>
-            <pre className="whitespace-pre-wrap text-sm text-neutral-200 font-sans">
+      </div>
+
+      {session.notes ? (
+        <div className="px-8 mt-8">
+          <div className="bg-surface-low border-l-2 border-crimson px-5 py-4">
+            <div className="label-md text-crimson">Notes</div>
+            <pre className="mt-3 whitespace-pre-wrap font-serif italic text-base text-ink-dim leading-relaxed">
               {session.notes}
             </pre>
           </div>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
 
       {isPPL && session.exercises?.length > 0 ? (
-        <div className="px-5 mt-6">
-          <h2 className="text-xs uppercase tracking-widest text-neutral-500 mb-2">
-            Exercises
-          </h2>
+        <div className="px-8 mt-10">
+          <div className="flex items-center gap-4 mb-5">
+            <h2 className="label-md text-crimson tracking-[0.2em]">Exercises</h2>
+            <span className="hairline flex-1" />
+            <span className="font-mono text-[10px] tabular tracking-[0.18em] text-ink-faint">
+              {String(session.exercises.length).padStart(2, '0')}
+            </span>
+          </div>
           <ExerciseBreakdown
             exercises={session.exercises}
             defaultOpen
@@ -140,7 +147,7 @@ export default function SessionDetail() {
         </div>
       ) : null}
 
-      <div className="px-5 mt-8 space-y-3">
+      <div className="px-8 mt-10 space-y-3">
         <div className="flex gap-3">
           <Button
             variant="secondary"
@@ -148,7 +155,7 @@ export default function SessionDetail() {
             className="flex-1"
             onClick={handleEdit}
           >
-            <Pencil size={16} className="mr-2" /> Edit details
+            <Pencil size={14} strokeWidth={1.6} className="mr-2" /> Edit
           </Button>
           <Button
             variant="danger"
@@ -156,7 +163,7 @@ export default function SessionDetail() {
             className="flex-1"
             onClick={() => setConfirmDelete(true)}
           >
-            <Trash2 size={16} className="mr-2" /> Delete
+            <Trash2 size={14} strokeWidth={1.6} className="mr-2" /> Delete
           </Button>
         </div>
         {isPPL ? (
@@ -166,7 +173,7 @@ export default function SessionDetail() {
             className="w-full"
             onClick={handleRepeat}
           >
-            <Repeat size={16} className="mr-2" /> Repeat this workout
+            <Repeat size={14} strokeWidth={1.6} className="mr-2" /> Repeat workout
           </Button>
         ) : null}
       </div>
@@ -181,11 +188,12 @@ export default function SessionDetail() {
       ) : null}
 
       {confirmDelete ? (
-        <div className="fixed inset-0 z-30 bg-black/70 flex items-end sm:items-center justify-center p-4">
-          <div className="w-full max-w-sm rounded-2xl bg-neutral-900 border border-neutral-800 p-5">
-            <h3 className="text-lg font-semibold text-neutral-100">Delete session?</h3>
-            <p className="mt-1 text-sm text-neutral-400">This can't be undone.</p>
-            <div className="mt-4 flex gap-3">
+        <div className="fixed inset-0 z-30 bg-black/80 flex items-end sm:items-center justify-center p-4 backdrop-blur">
+          <div className="w-full max-w-sm bg-surface-low border border-hairline-strong p-6">
+            <h3 className="font-serif text-2xl text-ink leading-tight">Delete session?</h3>
+            <p className="mt-3 body-md text-ink-dim">This can't be undone.</p>
+            <div className="hairline mt-5" />
+            <div className="mt-5 flex gap-3">
               <Button
                 variant="secondary"
                 size="md"
@@ -210,14 +218,14 @@ export default function SessionDetail() {
   );
 }
 
-function Stat({ label, value, mono }) {
+function Stat({ label, value, mono, accent }) {
   return (
-    <div className="flex items-center justify-between rounded-xl bg-neutral-900 border border-neutral-800 px-4 py-3">
-      <span className="text-sm text-neutral-400">{label}</span>
+    <div className="flex items-baseline justify-between bg-surface-1 px-5 py-4">
+      <span className="label-md text-ink-faint">{label}</span>
       <span
         className={[
-          'text-neutral-100',
-          mono ? 'font-mono text-lg' : 'text-base',
+          mono ? 'font-mono tabular text-lg' : 'font-serif text-lg',
+          accent ? 'text-crimson' : 'text-ink',
         ].join(' ')}
       >
         {value}
@@ -258,25 +266,26 @@ function EditSetModal({ session, editSet, onCancel, onSave }) {
   }
 
   return (
-    <div className="fixed inset-0 z-30 bg-black/70 flex items-end sm:items-center justify-center p-4">
-      <div className="w-full max-w-sm rounded-2xl bg-neutral-900 border border-neutral-800 p-5 max-h-[90vh] overflow-auto">
-        <h3 className="text-lg font-semibold text-neutral-100">
-          Edit set {editSet.setIndex + 1}
-        </h3>
-        <p className="text-xs text-neutral-500 mt-0.5">{entry?.name}</p>
+    <div className="fixed inset-0 z-30 bg-black/80 backdrop-blur flex items-end sm:items-center justify-center p-4">
+      <div className="w-full max-w-sm bg-surface-low border border-hairline-strong p-6 max-h-[90vh] overflow-auto">
+        <div className="label-md text-crimson tracking-[0.32em]">
+          ◆&nbsp;&nbsp;Edit set {String(editSet.setIndex + 1).padStart(2, '0')}
+        </div>
+        <h3 className="mt-3 font-serif text-2xl text-ink leading-tight">{entry?.name}</h3>
+        <div className="hairline mt-5" />
 
-        <div className="mt-5 space-y-5">
+        <div className="mt-6 space-y-6">
           {isUnilateral ? (
             <>
               <div>
-                <div className="text-xs uppercase tracking-widest text-neutral-500 mb-2">Left</div>
+                <div className="label-md text-crimson mb-3">Left</div>
                 <div className="grid grid-cols-2 gap-3">
                   <NumberStepper value={leftReps} onChange={setLeftReps} step={1} min={0} max={100} ariaLabel="Left reps" />
                   <NumberStepper value={leftWeight} onChange={setLeftWeight} step={0.5} min={0} max={500} decimals={1} suffix="kg" ariaLabel="Left weight" inputMode="decimal" />
                 </div>
               </div>
               <div>
-                <div className="text-xs uppercase tracking-widest text-neutral-500 mb-2">Right</div>
+                <div className="label-md text-crimson mb-3">Right</div>
                 <div className="grid grid-cols-2 gap-3">
                   <NumberStepper value={rightReps} onChange={setRightReps} step={1} min={0} max={100} ariaLabel="Right reps" />
                   <NumberStepper value={rightWeight} onChange={setRightWeight} step={0.5} min={0} max={500} decimals={1} suffix="kg" ariaLabel="Right weight" inputMode="decimal" />
@@ -286,11 +295,11 @@ function EditSetModal({ session, editSet, onCancel, onSave }) {
           ) : (
             <>
               <div>
-                <div className="text-xs uppercase tracking-widest text-neutral-500 mb-2">Reps</div>
+                <div className="label-md text-ink-faint mb-3">Reps</div>
                 <NumberStepper value={reps} onChange={setReps} step={1} min={0} max={100} ariaLabel="Reps" />
               </div>
               <div>
-                <div className="text-xs uppercase tracking-widest text-neutral-500 mb-2">Weight</div>
+                <div className="label-md text-ink-faint mb-3">Weight</div>
                 <NumberStepper value={weight} onChange={setWeight} step={0.5} min={0} max={500} decimals={1} suffix="kg" ariaLabel="Weight" inputMode="decimal" />
               </div>
             </>
@@ -298,8 +307,8 @@ function EditSetModal({ session, editSet, onCancel, onSave }) {
 
           <div>
             <div className="flex items-baseline justify-between">
-              <span className="text-sm text-neutral-400">Per-set RPE</span>
-              <span className="font-mono text-green-500">{rpe || '—'}</span>
+              <span className="label-md text-ink-faint">Per-set RPE</span>
+              <span className="font-mono tabular text-lg text-crimson">{rpe || '—'}</span>
             </div>
             <input
               type="range"
@@ -308,12 +317,12 @@ function EditSetModal({ session, editSet, onCancel, onSave }) {
               step="1"
               value={rpe}
               onChange={(e) => setRpe(Number(e.target.value))}
-              className="w-full accent-green-500 mt-1 h-2"
+              className="w-full accent-crimson-bright mt-3 h-1"
             />
           </div>
         </div>
 
-        <div className="mt-6 flex gap-3">
+        <div className="mt-7 flex gap-3">
           <Button variant="secondary" size="md" className="flex-1" onClick={onCancel}>
             Cancel
           </Button>

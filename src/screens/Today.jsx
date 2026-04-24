@@ -92,7 +92,7 @@ export default function Today({ toast }) {
       {/* ============== MASTHEAD ============== */}
       <header className="px-8 pt-12 pb-8">
         <div className="flex items-center justify-between label-md text-ink-faint">
-          <span className="tracking-[0.32em] text-crimson">CRIMSON&nbsp;MIDNIGHT</span>
+          <span className="tracking-[0.32em] text-crimson">BUILD&nbsp;AT&nbsp;HOME</span>
           <span className="font-mono tabular tracking-[0.18em]">№&nbsp;{editionNumber}</span>
         </div>
 

@@ -9,10 +9,10 @@ export default function SetPips({ total, completed, current }) {
             key={i}
             aria-hidden
             className={[
-              'block rounded-full transition-colors',
-              isCurrent ? 'w-6 h-2 bg-green-500' : 'w-2 h-2',
-              !isCurrent && isDone ? 'bg-green-500/70' : '',
-              !isCurrent && !isDone ? 'bg-neutral-700' : '',
+              'block transition-colors',
+              isCurrent ? 'w-6 h-0.5 bg-crimson-bright' : 'w-2 h-0.5',
+              !isCurrent && isDone ? 'bg-crimson/70' : '',
+              !isCurrent && !isDone ? 'bg-surface-bright' : '',
             ].join(' ')}
           />
         );

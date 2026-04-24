@@ -19,11 +19,11 @@ export default function RestTimer({
   endsAt,
   onDone,
   onSkip,
-  onAdd,            // optional: add 30s
-  nextSetPreview,   // { reps, weightKg }
-  justCompletedSet, // the set that was just logged
+  onAdd,
+  nextSetPreview,
+  justCompletedSet,
   exerciseName,
-  setIndex,         // index of the set we're resting AFTER (0-based)
+  setIndex,
   totalSets,
   audioEnabled = true,
   hapticsEnabled = true,
@@ -73,77 +73,76 @@ export default function RestTimer({
 
   return (
     <div className="flex-1 flex flex-col relative">
-      {/* Top ambient progress bar */}
-      <div className="h-1 bg-neutral-900 relative overflow-hidden">
+      {/* Top progress bar — thin, fast, crimson */}
+      <div className="h-0.5 bg-surface-high relative overflow-hidden">
         <div
-          className="absolute inset-y-0 left-0 bg-green-500 transition-[width]"
+          className="absolute inset-y-0 left-0 bg-crimson-bright transition-[width]"
           style={{ width: `${progressPct}%`, transitionDuration: '120ms' }}
         />
       </div>
 
-      <div className="flex-1 flex flex-col px-5 pt-5 pb-6">
-        {/* Just-completed badge */}
+      <div className="flex-1 flex flex-col px-6 pt-6 pb-7">
+        {/* Just-logged confirmation */}
         {justCompletedSet ? (
-          <div className="rounded-xl bg-neutral-900 border border-neutral-800 px-4 py-2.5 flex items-center gap-3">
-            <div className="w-7 h-7 rounded-full bg-green-500/15 flex items-center justify-center shrink-0">
-              <Check size={14} className="text-green-400" />
+          <div className="border border-hairline px-4 py-3 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-crimson-blood/40 flex items-center justify-center shrink-0">
+              <Check size={14} className="text-crimson" strokeWidth={2} />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-[10px] uppercase tracking-widest text-neutral-500">
+              <div className="label-md text-ink-faint">
                 Logged · {exerciseName}
               </div>
-              <div className="font-mono text-sm text-neutral-200 truncate">
-                Set {setIndex + 1} · {summariseJust(justCompletedSet)}
+              <div className="font-mono tabular text-sm text-ink-dim truncate mt-0.5">
+                Set&nbsp;{String(setIndex + 1).padStart(2, '0')} · {summariseJust(justCompletedSet)}
               </div>
             </div>
           </div>
         ) : null}
 
-        {/* Big centered "next up" block */}
+        {/* Next-up showpiece */}
         <div className="flex-1 flex flex-col items-center justify-center text-center">
           {hasNext ? (
             <>
-              <div className="text-[11px] uppercase tracking-[0.3em] text-green-500">
-                Next up
+              <div className="label-md text-crimson tracking-[0.32em]">
+                ◆&nbsp;&nbsp;Next up
               </div>
-              <div className="mt-3 text-sm text-neutral-400 uppercase tracking-wider">
+              <div className="mt-3 font-serif italic text-ink-dim text-base tabular">
                 Set {nextSetNumber} of {totalSets}
               </div>
-              <div className="mt-4 font-mono font-bold text-neutral-100 leading-none flex items-baseline">
-                <span className="text-[5.5rem]">{nextSetPreview.reps}</span>
-                <span className="text-2xl text-neutral-500 mx-2">×</span>
-                <span className="text-[5.5rem]">{nextSetPreview.weightKg}</span>
-                <span className="text-xl text-neutral-500 ml-1">kg</span>
+              <div className="mt-8 font-serif font-light text-ink leading-none flex items-baseline tabular">
+                <span className="text-[6rem]">{nextSetPreview.reps}</span>
+                <span className="text-3xl text-ink-faint mx-3 font-light">×</span>
+                <span className="text-[6rem]">{nextSetPreview.weightKg}</span>
+                <span className="font-mono uppercase tracking-widest text-sm text-ink-faint ml-2 self-end pb-3">kg</span>
               </div>
             </>
           ) : (
             <>
-              <div className="text-[11px] uppercase tracking-[0.3em] text-green-500">Next</div>
-              <div className="mt-3 font-semibold text-neutral-100 text-2xl">
-                Last set done
+              <div className="label-md text-crimson tracking-[0.32em]">
+                ◆&nbsp;&nbsp;Closing
+              </div>
+              <div className="mt-6 font-serif text-3xl text-ink italic">
+                Last set complete.
               </div>
             </>
           )}
 
-          <div className="mt-8 flex items-baseline gap-2">
-            <span className="text-[10px] uppercase tracking-widest text-neutral-500">
-              Rest
-            </span>
-            <span className="font-mono font-bold text-neutral-400 text-4xl leading-none">
+          <div className="mt-12 flex flex-col items-center">
+            <span className="label-md text-ink-faint">Rest</span>
+            <span className="mt-2 font-mono tabular font-light text-5xl leading-none text-ink-dim">
               {formatMMSS(remaining)}
             </span>
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           {onAdd ? (
             <button
               type="button"
               onClick={onAdd}
-              className="w-full flex items-center justify-center gap-2 min-h-11 text-sm text-neutral-400 hover:text-neutral-200 border border-neutral-800 rounded-xl hover:bg-neutral-900"
+              className="w-full flex items-center justify-center gap-2 min-h-12 label-md text-ink-faint hover:text-crimson border border-hairline-strong rounded transition-colors"
             >
-              <Plus size={14} /> Add 30s
+              <Plus size={14} strokeWidth={1.6} /> Add 30s
             </button>
           ) : null}
           <Button variant="primary" size="lg" className="w-full" onClick={onSkip}>

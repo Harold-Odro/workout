@@ -12,38 +12,37 @@ function Rung({ type, level, currentLevel, successfulCount, onSelect }) {
       type="button"
       onClick={() => onSelect(level)}
       className={[
-        'w-full text-left rounded-xl border px-4 py-3 flex items-center gap-3',
-        'transition-colors',
+        'group w-full text-left px-4 py-4 flex items-center gap-4 transition-colors',
         isCurrent
-          ? 'border-green-500/60 bg-green-500/10'
-          : isPast
-          ? 'border-neutral-800 bg-neutral-900/60'
-          : 'border-neutral-800 bg-neutral-900 hover:border-neutral-600',
+          ? 'bg-surface-low border-l-2 border-crimson-bright'
+          : 'bg-surface-1 border-l-2 border-transparent hover:bg-surface-high',
       ].join(' ')}
     >
       <div
         className={[
-          'w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-mono text-sm',
+          'w-9 h-9 rounded-full flex items-center justify-center shrink-0 font-mono tabular text-xs',
           isCurrent
-            ? 'bg-green-500 text-neutral-950'
+            ? 'bg-crimson-bright text-white'
             : isPast
-            ? 'bg-neutral-800 text-neutral-400'
-            : 'bg-neutral-800 text-neutral-500',
+            ? 'bg-surface-high text-ink-dim'
+            : 'border border-hairline-strong text-ink-faint',
         ].join(' ')}
         aria-hidden
       >
-        {isPast ? <Check size={14} /> : isFuture ? <Lock size={12} /> : level}
+        {isPast ? <Check size={14} strokeWidth={2} /> : isFuture ? <Lock size={12} strokeWidth={1.6} /> : String(level).padStart(2, '0')}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-baseline gap-2">
-          <span className="text-sm font-semibold text-neutral-100">Level {level}</span>
-          <span className="text-xs text-neutral-500">~{estimatedMinutes(type, level)} min</span>
+        <div className="flex items-baseline gap-3">
+          <span className="font-serif text-lg text-ink leading-none">Level {level}</span>
+          <span className="font-mono text-[10px] tabular tracking-[0.18em] text-ink-faint">
+            ~{estimatedMinutes(type, level)}&nbsp;MIN
+          </span>
         </div>
-        <div className="mt-0.5 text-xs text-neutral-400">{describeLevel(type, level)}</div>
+        <div className="mt-1.5 body-md text-ink-dim leading-snug">{describeLevel(type, level)}</div>
         {isCurrent ? (
-          <div className="mt-1 text-xs text-green-500">
-            {successfulCount}/{PROGRESSION_RULES.sessionsRequired} sessions logged
-            {level < MAX_LEVEL ? ' before next level' : ''}
+          <div className="mt-2 label-md text-crimson tabular">
+            {successfulCount}/{PROGRESSION_RULES.sessionsRequired}&nbsp;sessions
+            {level < MAX_LEVEL ? ' · before promotion' : ''}
           </div>
         ) : null}
       </div>
@@ -57,12 +56,13 @@ export default function LevelLadder({ type, sessions, currentLevel, onSelectLeve
   const successfulCount = countSuccessfulAtLevel(sessions, type, currentLevel);
 
   return (
-    <section className="rounded-2xl bg-neutral-900 border border-neutral-800 p-4">
-      <div className="flex items-baseline justify-between mb-3">
-        <h2 className="text-base font-semibold text-neutral-100">{meta.name}</h2>
-        <span className="text-xs font-mono text-green-500">L{currentLevel}</span>
+    <section className="tonal p-6">
+      <div className="eyebrow">
+        <h2>{meta.name}</h2>
+        <span className="meta">LVL&nbsp;{String(currentLevel).padStart(2, '0')}</span>
       </div>
-      <div className="space-y-2">
+      <div className="hairline mb-4" />
+      <div className="space-y-px bg-hairline">
         {ladder.map((r) => (
           <Rung
             key={r.level}

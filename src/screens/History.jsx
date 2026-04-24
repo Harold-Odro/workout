@@ -39,7 +39,6 @@ export default function History() {
     setSessions(getSessions());
   }, []);
 
-  // Reset type filter when program filter changes.
   useEffect(() => {
     setTypeFilter('all');
   }, [programFilter]);
@@ -63,16 +62,27 @@ export default function History() {
   const groups = useMemo(() => groupSessionsByWeek(filtered), [filtered]);
 
   return (
-    <div className="min-h-full pt-safe pb-24">
-      <header className="px-5 pt-8 pb-4">
-        <h1 className="text-2xl font-semibold text-neutral-100">History</h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          Last 12 weeks · darker = higher effort
+    <div className="min-h-full pt-safe pb-32">
+      <header className="px-8 pt-12 pb-2">
+        <div className="flex items-center justify-between label-md text-ink-faint">
+          <span className="tracking-[0.32em] text-crimson">SECTION&nbsp;·&nbsp;02</span>
+          <span className="font-mono tabular tracking-[0.18em]">
+            {String(sessions.length).padStart(3, '0')}&nbsp;ENTRIES
+          </span>
+        </div>
+        <div className="hairline-strong mt-4" />
+
+        <h1 className="headline-xl mt-8 crimson-rise">
+          The <em className="italic font-light text-crimson">archive</em>
+          <br />of effort.
+        </h1>
+        <p className="mt-5 body-md text-ink-dim max-w-md">
+          Twelve weeks at a glance — darker squares, harder days.
         </p>
       </header>
 
-      <section className="px-5">
-        <div className="rounded-2xl bg-neutral-900 border border-neutral-800 p-4">
+      <section className="px-8 mt-10">
+        <div className="tonal p-6">
           <CalendarHeatmap
             sessions={sessions}
             weeks={12}
@@ -82,76 +92,91 @@ export default function History() {
         </div>
       </section>
 
-      <section className="px-5 mt-6 flex flex-wrap gap-2">
-        {PROGRAM_FILTERS.map((f) => {
-          const active = programFilter === f.id;
-          return (
-            <button
-              key={f.id}
-              onClick={() => setProgramFilter(f.id)}
-              className={[
-                'px-3 min-h-9 rounded-full text-sm font-medium transition-colors',
-                active
-                  ? 'bg-green-500 text-neutral-950'
-                  : 'bg-neutral-900 text-neutral-300 border border-neutral-800 hover:border-neutral-600',
-              ].join(' ')}
-            >
-              {f.label}
-            </button>
-          );
-        })}
-      </section>
-
-      {typeFilters ? (
-        <section className="px-5 mt-2 flex flex-wrap gap-2">
-          {typeFilters.map((f) => {
-            const active = typeFilter === f.id;
+      {/* Filters */}
+      <section className="px-8 mt-8">
+        <div className="flex items-center gap-6 mb-4">
+          <span className="label-md text-ink-faint">Program</span>
+          <span className="hairline flex-1" />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {PROGRAM_FILTERS.map((f) => {
+            const active = programFilter === f.id;
             return (
               <button
                 key={f.id}
-                onClick={() => setTypeFilter(f.id)}
+                onClick={() => setProgramFilter(f.id)}
                 className={[
-                  'px-2.5 min-h-8 rounded-full text-xs font-medium transition-colors',
+                  'rounded-sm px-3 min-h-9 label-md transition-colors',
                   active
-                    ? 'bg-neutral-200 text-neutral-950'
-                    : 'bg-neutral-900 text-neutral-400 border border-neutral-800 hover:border-neutral-600',
+                    ? 'bg-crimson-bright text-white'
+                    : 'bg-surface-1 text-ink-dim hover:text-crimson border border-hairline-strong',
                 ].join(' ')}
               >
                 {f.label}
               </button>
             );
           })}
+        </div>
+      </section>
+
+      {typeFilters ? (
+        <section className="px-8 mt-5">
+          <div className="flex flex-wrap gap-2">
+            {typeFilters.map((f) => {
+              const active = typeFilter === f.id;
+              return (
+                <button
+                  key={f.id}
+                  onClick={() => setTypeFilter(f.id)}
+                  className={[
+                    'rounded-sm px-2.5 min-h-8 label-md transition-colors',
+                    active
+                      ? 'bg-ink text-surface'
+                      : 'bg-transparent text-ink-faint hover:text-crimson border border-hairline',
+                  ].join(' ')}
+                >
+                  {f.label}
+                </button>
+              );
+            })}
+          </div>
         </section>
       ) : null}
 
       {selectedDate ? (
-        <div className="px-5 mt-4 flex items-center justify-between text-sm">
-          <span className="text-neutral-400">
-            Showing {format(parseISO(selectedDate), 'MMM d')}
+        <div className="px-8 mt-6 flex items-center justify-between">
+          <span className="font-serif italic text-ink-dim">
+            Showing {format(parseISO(selectedDate), 'MMMM d')}
           </span>
           <button
             onClick={() => setSelectedDate(null)}
-            className="text-green-500 hover:text-green-400"
+            className="label-md text-crimson hover:text-crimson-bright"
           >
             Clear
           </button>
         </div>
       ) : null}
 
-      <section className="px-5 mt-6 space-y-6">
+      <section className="px-8 mt-10 space-y-10">
         {groups.length === 0 ? (
-          <p className="text-sm text-neutral-500 py-8 text-center">
-            {sessions.length === 0
-              ? 'No sessions yet.'
-              : 'No sessions match this filter.'}
-          </p>
+          <div className="border border-hairline px-6 py-10 text-center">
+            <p className="font-serif italic text-ink-dim text-lg">
+              {sessions.length === 0
+                ? 'The page is blank.'
+                : 'Nothing matches that filter.'}
+            </p>
+          </div>
         ) : (
           groups.map((g) => (
             <div key={g.label}>
-              <h2 className="text-xs uppercase tracking-wider text-neutral-500 mb-2">
-                {g.label}
-              </h2>
-              <div className="space-y-2">
+              <div className="flex items-center gap-4 mb-4">
+                <h2 className="label-md text-crimson tracking-[0.2em]">{g.label}</h2>
+                <span className="hairline flex-1" />
+                <span className="font-mono text-[10px] tabular tracking-[0.18em] text-ink-faint">
+                  {String(g.sessions.length).padStart(2, '0')}
+                </span>
+              </div>
+              <div className="space-y-px bg-hairline">
                 {g.sessions.map((s) => (
                   <SessionDetailCard key={s.id} session={s} />
                 ))}

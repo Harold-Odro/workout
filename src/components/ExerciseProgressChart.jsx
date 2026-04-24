@@ -28,31 +28,35 @@ export default function ExerciseProgressChart({ sessions }) {
   });
 
   return (
-    <div className="rounded-2xl bg-neutral-900 border border-neutral-800 p-4">
-      <div className="flex items-baseline justify-between mb-3">
-        <h2 className="text-sm uppercase tracking-wider text-neutral-500">
-          Exercise progression
-        </h2>
-        <span className="text-xs text-neutral-500">top-set volume (reps × kg)</span>
+    <div className="tonal p-6">
+      <div className="eyebrow">
+        <h2>Exercise progression</h2>
+        <span className="meta">Top set · kg×reps</span>
       </div>
+      <div className="hairline mb-4" />
+
       {ids.length === 0 ? (
-        <p className="text-sm text-neutral-500 py-10 text-center">
+        <p className="font-serif italic text-ink-dim text-center py-10">
           Log a PPL session to start tracking exercise progression.
         </p>
       ) : (
         <>
-          <select
-            value={selectedId || ''}
-            onChange={(e) => setSelectedId(e.target.value)}
-            className="w-full rounded-lg bg-neutral-950 border border-neutral-800 px-3 py-2 text-sm text-neutral-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
-          >
-            {options.map((o) => (
-              <option key={o.id} value={o.id}>{o.name}</option>
-            ))}
-          </select>
-          <div className="mt-4" style={{ width: '100%', height: 180 }}>
+          <div className="relative">
+            <select
+              value={selectedId || ''}
+              onChange={(e) => setSelectedId(e.target.value)}
+              className="w-full appearance-none bg-transparent border-0 border-b border-hairline-strong pb-2 pt-1 pr-8 font-serif text-lg text-ink focus:outline-none focus:border-crimson transition-colors"
+            >
+              {options.map((o) => (
+                <option key={o.id} value={o.id} className="bg-surface text-ink">{o.name}</option>
+              ))}
+            </select>
+            <span aria-hidden className="pointer-events-none absolute right-1 top-2 text-ink-faint">▾</span>
+          </div>
+
+          <div className="mt-6" style={{ width: '100%', height: 180 }}>
             {data.length < 2 ? (
-              <p className="text-sm text-neutral-500 py-8 text-center">
+              <p className="font-serif italic text-ink-dim text-center py-8">
                 Need at least 2 sessions with this exercise to chart.
               </p>
             ) : (
@@ -63,34 +67,35 @@ export default function ExerciseProgressChart({ sessions }) {
                 >
                   <XAxis
                     dataKey="dateLabel"
-                    tick={{ fill: '#737373', fontSize: 11 }}
+                    tick={{ fill: '#8a8a8c', fontSize: 10, fontFamily: 'Inter', letterSpacing: '0.12em' }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <YAxis
-                    tick={{ fill: '#737373', fontSize: 11 }}
+                    tick={{ fill: '#8a8a8c', fontSize: 10, fontFamily: 'Inter' }}
                     axisLine={false}
                     tickLine={false}
                     width={40}
                   />
                   <Tooltip
-                    cursor={{ stroke: '#262626' }}
+                    cursor={{ stroke: 'rgba(255,82,93,0.4)', strokeDasharray: '2 2' }}
                     contentStyle={{
-                      background: '#0a0a0a',
-                      border: '1px solid #262626',
-                      borderRadius: 8,
-                      color: '#e5e5e5',
+                      background: '#0c0e0f',
+                      border: '1px solid rgba(255,255,255,0.16)',
+                      borderRadius: 4,
+                      color: '#e2e2e3',
                       fontSize: 12,
+                      fontFamily: 'Inter',
                     }}
                     formatter={(v) => [`${v} kg·reps`, 'Top set']}
-                    labelStyle={{ color: '#a3a3a3' }}
+                    labelStyle={{ color: '#8a8a8c', textTransform: 'uppercase', letterSpacing: '0.16em', fontSize: 10 }}
                   />
                   <Line
                     type="monotone"
                     dataKey="topVolume"
-                    stroke="#22c55e"
+                    stroke="#ff525d"
                     strokeWidth={2}
-                    dot={{ r: 3, fill: '#22c55e' }}
+                    dot={{ r: 2.5, fill: '#ff525d', stroke: '#ff525d' }}
                   />
                 </LineChart>
               </ResponsiveContainer>

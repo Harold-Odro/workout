@@ -45,14 +45,14 @@ export default function NumberStepper({
   const display = decimals > 0 ? Number(value ?? 0).toFixed(decimals) : String(value ?? 0);
 
   return (
-    <div className="flex items-center justify-center gap-3">
+    <div className="flex items-center justify-center gap-4">
       <button
         type="button"
         onClick={() => nudge(-step)}
         aria-label={ariaLabel ? `Decrease ${ariaLabel}` : 'Decrease'}
-        className="w-14 h-14 rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center text-neutral-200 hover:bg-neutral-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
+        className="w-14 h-14 rounded border border-hairline-strong flex items-center justify-center text-ink-dim hover:text-crimson hover:border-crimson transition-colors focus:outline-none focus-visible:border-crimson"
       >
-        <Minus size={22} />
+        <Minus size={20} strokeWidth={1.4} />
       </button>
       {editing ? (
         <input
@@ -66,7 +66,7 @@ export default function NumberStepper({
             if (e.key === 'Enter') commit();
             if (e.key === 'Escape') setEditing(false);
           }}
-          className="w-28 text-center font-mono font-bold text-4xl bg-transparent text-neutral-100 outline-none border-b-2 border-green-500"
+          className="w-32 text-center font-serif font-light text-5xl tabular bg-transparent text-ink outline-none border-b border-crimson"
           aria-label={ariaLabel}
         />
       ) : (
@@ -74,19 +74,19 @@ export default function NumberStepper({
           type="button"
           onClick={startEditing}
           aria-label={`${ariaLabel || 'Value'}: ${display}${suffix}`}
-          className="w-28 text-center font-mono font-bold text-4xl text-neutral-100 hover:text-white focus:outline-none"
+          className="w-32 text-center font-serif font-light text-5xl tabular text-ink hover:text-crimson focus:outline-none transition-colors"
         >
           {display}
-          {suffix ? <span className="ml-1 text-xl text-neutral-400">{suffix}</span> : null}
+          {suffix ? <span className="ml-2 font-mono uppercase tracking-widest text-sm text-ink-faint">{suffix}</span> : null}
         </button>
       )}
       <button
         type="button"
         onClick={() => nudge(step)}
         aria-label={ariaLabel ? `Increase ${ariaLabel}` : 'Increase'}
-        className="w-14 h-14 rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center text-neutral-200 hover:bg-neutral-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
+        className="w-14 h-14 rounded border border-hairline-strong flex items-center justify-center text-ink-dim hover:text-crimson hover:border-crimson transition-colors focus:outline-none focus-visible:border-crimson"
       >
-        <Plus size={22} />
+        <Plus size={20} strokeWidth={1.4} />
       </button>
     </div>
   );

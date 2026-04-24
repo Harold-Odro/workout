@@ -6,7 +6,6 @@ function summariseSets(sets) {
   const completed = (sets || []).filter((s) => s.completed);
   const n = completed.length;
   if (n === 0) return '—';
-  // For unilateral, summarise reps range across both sides
   const first = completed[0];
   if (first.left || first.right) {
     const reps = completed.flatMap((s) => [s.left?.reps, s.right?.reps]).filter(Number.isFinite);
@@ -27,31 +26,31 @@ function summariseSets(sets) {
 function ExerciseCard({ entry, defaultOpen = false, editable = false, onEditSet }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="rounded-xl bg-neutral-900 border border-neutral-800">
+    <div className="bg-surface-1 border border-hairline">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 rounded-xl"
+        className="w-full flex items-center justify-between px-5 py-4 text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-crimson"
         aria-expanded={open}
       >
         <div className="min-w-0">
-          <div className="text-sm font-semibold text-neutral-100 truncate">{entry.name}</div>
-          <div className="mt-0.5 text-xs text-neutral-500">{summariseSets(entry.sets)}</div>
+          <div className="font-serif text-lg text-ink truncate leading-tight">{entry.name}</div>
+          <div className="mt-1.5 font-mono text-[12px] tabular text-ink-faint">{summariseSets(entry.sets)}</div>
         </div>
         {open ? (
-          <ChevronUp size={18} className="text-neutral-500 shrink-0" />
+          <ChevronUp size={16} strokeWidth={1.4} className="text-ink-faint shrink-0 ml-3" />
         ) : (
-          <ChevronDown size={18} className="text-neutral-500 shrink-0" />
+          <ChevronDown size={16} strokeWidth={1.4} className="text-ink-faint shrink-0 ml-3" />
         )}
       </button>
       {open ? (
-        <div className="px-4 pb-3 border-t border-neutral-800">
+        <div className="px-5 pb-3 border-t border-hairline">
           {(entry.sets || []).map((s, i) =>
             editable ? (
               <button
                 key={i}
                 onClick={() => onEditSet?.(entry.exerciseId, i)}
-                className="w-full text-left hover:bg-neutral-800/40 rounded-md px-2 -mx-2"
+                className="w-full text-left hover:bg-surface-high px-2 -mx-2 transition-colors"
               >
                 <SetRow index={i} set={s} />
               </button>
@@ -68,7 +67,7 @@ function ExerciseCard({ entry, defaultOpen = false, editable = false, onEditSet 
 export default function ExerciseBreakdown({ exercises, editable = false, onEditSet, defaultOpen = false }) {
   if (!exercises || exercises.length === 0) return null;
   return (
-    <div className="space-y-2">
+    <div className="space-y-px bg-hairline">
       {exercises.map((e) => (
         <ExerciseCard
           key={e.exerciseId}

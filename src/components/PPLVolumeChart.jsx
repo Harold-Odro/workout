@@ -10,11 +10,13 @@ import {
 } from 'recharts';
 import { pplVolumeByWeek } from '../lib/analyticsPPL.js';
 
+// Crimson-anchored palette: primary on Push, monochrome tonal stack
+// for the supporting categories so the chart stays disciplined.
 const BAR_COLORS = {
-  push: '#22c55e',
-  pull: '#60a5fa',
-  legs: '#f59e0b',
-  circuit: '#a78bfa',
+  push:    '#ff525d',
+  pull:    '#c8c6c8',
+  legs:    '#8a8a8c',
+  circuit: '#5f3e3e',
 };
 
 const LABELS = {
@@ -29,15 +31,14 @@ export default function PPLVolumeChart({ sessions }) {
   const hasData = data.some((d) => d.push || d.pull || d.legs || d.circuit);
 
   return (
-    <div className="rounded-2xl bg-neutral-900 border border-neutral-800 p-4">
-      <div className="flex items-baseline justify-between mb-3">
-        <h2 className="text-sm uppercase tracking-wider text-neutral-500">
-          PPL volume
-        </h2>
-        <span className="text-xs text-neutral-500">sets / week · last 8</span>
+    <div className="tonal p-6">
+      <div className="eyebrow">
+        <h2>PPL volume</h2>
+        <span className="meta">Sets · 8&nbsp;wk</span>
       </div>
+      <div className="hairline mb-4" />
       {!hasData ? (
-        <p className="text-sm text-neutral-500 py-10 text-center">
+        <p className="font-serif italic text-ink-dim text-center py-10">
           No PPL sets logged yet.
         </p>
       ) : (
@@ -46,32 +47,33 @@ export default function PPLVolumeChart({ sessions }) {
             <BarChart data={data} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
               <XAxis
                 dataKey="label"
-                tick={{ fill: '#737373', fontSize: 11 }}
+                tick={{ fill: '#8a8a8c', fontSize: 10, fontFamily: 'Inter', letterSpacing: '0.12em' }}
                 axisLine={false}
                 tickLine={false}
                 interval={0}
               />
               <YAxis
-                tick={{ fill: '#737373', fontSize: 11 }}
+                tick={{ fill: '#8a8a8c', fontSize: 10, fontFamily: 'Inter' }}
                 axisLine={false}
                 tickLine={false}
                 width={40}
               />
               <Tooltip
-                cursor={{ fill: '#262626' }}
+                cursor={{ fill: 'rgba(255,82,93,0.06)' }}
                 contentStyle={{
-                  background: '#0a0a0a',
-                  border: '1px solid #262626',
-                  borderRadius: 8,
-                  color: '#e5e5e5',
+                  background: '#0c0e0f',
+                  border: '1px solid rgba(255,255,255,0.16)',
+                  borderRadius: 4,
+                  color: '#e2e2e3',
                   fontSize: 12,
+                  fontFamily: 'Inter',
                 }}
                 formatter={(v, name) => [`${v} sets`, LABELS[name] || name]}
-                labelStyle={{ color: '#a3a3a3' }}
+                labelStyle={{ color: '#8a8a8c', textTransform: 'uppercase', letterSpacing: '0.16em', fontSize: 10 }}
               />
               <Legend
-                iconSize={10}
-                wrapperStyle={{ fontSize: 11, color: '#a3a3a3' }}
+                iconSize={8}
+                wrapperStyle={{ fontSize: 10, color: '#8a8a8c', fontFamily: 'Inter', letterSpacing: '0.16em', textTransform: 'uppercase' }}
                 formatter={(v) => LABELS[v] || v}
               />
               <Bar dataKey="push"    stackId="a" fill={BAR_COLORS.push}    />

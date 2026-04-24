@@ -38,7 +38,6 @@ export default function Plan() {
     setActiveProgram(next);
   }
 
-  // Skip handlers
   function handleSkipSelect(type, targetLevel) {
     const current = levels[type] ?? 1;
     if (targetLevel === current) return;
@@ -55,7 +54,6 @@ export default function Plan() {
     setConfirm(null);
   }
 
-  // PPL handlers
   function handleExerciseSelect(exerciseId, targetLevel) {
     const current = exerciseLevels[exerciseId] ?? 1;
     if (targetLevel === current) return;
@@ -75,73 +73,84 @@ export default function Plan() {
   const byWorkout = useMemo(() => exercisesByWorkout(), []);
 
   return (
-    <div className="min-h-full pt-safe pb-24">
-      <header className="px-5 pt-8 pb-3">
-        <h1 className="text-2xl font-semibold text-neutral-100">Plan</h1>
+    <div className="min-h-full pt-safe pb-32">
+      <header className="px-8 pt-12 pb-2">
+        <div className="flex items-center justify-between label-md text-ink-faint">
+          <span className="tracking-[0.32em] text-crimson">SECTION&nbsp;·&nbsp;04</span>
+        </div>
+        <div className="hairline-strong mt-4" />
+
+        <h1 className="headline-xl mt-8 crimson-rise">
+          The <em className="italic font-light text-crimson">curriculum</em>.
+        </h1>
+        <p className="mt-5 body-md text-ink-dim max-w-md">
+          Each level is a chapter. Tap any rung to switch — promotions arrive after four solid sessions.
+        </p>
       </header>
 
-      <div className="px-5 pb-4">
-        <ProgramSwitcher value={program} onChange={changeProgram} />
+      <div className="px-8 mt-10">
+        <div className="flex items-center justify-between gap-6">
+          <span className="label-md text-ink-faint">Program</span>
+          <span className="hairline flex-1" />
+          <ProgramSwitcher value={program} onChange={changeProgram} />
+        </div>
       </div>
 
       {program === 'skip' ? (
-        <>
-          <p className="px-5 text-sm text-neutral-500 mb-4">
-            Tap any level to switch. Progression unlocks after 4 solid sessions.
-          </p>
-          <div className="px-5 space-y-4">
-            {WORKOUT_TYPES.map((t) => (
-              <LevelLadder
-                key={t}
-                type={t}
-                sessions={sessions}
-                currentLevel={levels[t] ?? 1}
-                onSelectLevel={(level) => handleSkipSelect(t, level)}
-              />
-            ))}
-          </div>
-        </>
+        <div className="px-8 mt-8 space-y-6">
+          {WORKOUT_TYPES.map((t) => (
+            <LevelLadder
+              key={t}
+              type={t}
+              sessions={sessions}
+              currentLevel={levels[t] ?? 1}
+              onSelectLevel={(level) => handleSkipSelect(t, level)}
+            />
+          ))}
+        </div>
       ) : (
-        <>
-          <p className="px-5 text-sm text-neutral-500 mb-4">
-            Each exercise tracks its own level. Tap to switch or preview.
-          </p>
-          <div className="px-5 space-y-6">
-            {PPL_TYPES.map((t) => {
-              const ids = byWorkout[t] || [];
-              if (ids.length === 0) return null;
-              return (
-                <section key={t}>
-                  <h2 className="text-sm uppercase tracking-wider text-neutral-500 mb-2">
+        <div className="px-8 mt-8 space-y-10">
+          {PPL_TYPES.map((t) => {
+            const ids = byWorkout[t] || [];
+            if (ids.length === 0) return null;
+            return (
+              <section key={t}>
+                <div className="flex items-center gap-4 mb-4">
+                  <h2 className="label-md text-crimson tracking-[0.2em]">
                     {PPL_META[t].name}
                   </h2>
-                  <div className="space-y-2">
-                    {ids.map((id) => {
-                      let ex;
-                      try { ex = getExerciseDef(id); } catch { return null; }
-                      return (
-                        <ExerciseLevelLadder
-                          key={id}
-                          exercise={ex}
-                          currentLevel={exerciseLevels[id] ?? 1}
-                          sessions={sessions}
-                          onSelectLevel={(level) => handleExerciseSelect(id, level)}
-                        />
-                      );
-                    })}
-                  </div>
-                </section>
-              );
-            })}
-          </div>
-        </>
+                  <span className="hairline flex-1" />
+                  <span className="font-mono text-[10px] tabular tracking-[0.18em] text-ink-faint">
+                    {String(ids.length).padStart(2, '0')}
+                  </span>
+                </div>
+                <div className="space-y-px bg-hairline">
+                  {ids.map((id) => {
+                    let ex;
+                    try { ex = getExerciseDef(id); } catch { return null; }
+                    return (
+                      <ExerciseLevelLadder
+                        key={id}
+                        exercise={ex}
+                        currentLevel={exerciseLevels[id] ?? 1}
+                        sessions={sessions}
+                        onSelectLevel={(level) => handleExerciseSelect(id, level)}
+                      />
+                    );
+                  })}
+                </div>
+              </section>
+            );
+          })}
+        </div>
       )}
 
       {confirm ? (
-        <div className="fixed inset-0 z-30 bg-black/70 flex items-end sm:items-center justify-center p-4">
-          <div className="w-full max-w-sm rounded-2xl bg-neutral-900 border border-neutral-800 p-5">
-            <h3 className="text-lg font-semibold text-neutral-100">Go back a level?</h3>
-            <p className="mt-1 text-sm text-neutral-400">
+        <div className="fixed inset-0 z-30 bg-black/80 backdrop-blur flex items-end sm:items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-surface-low border border-hairline-strong p-6">
+            <div className="label-md text-crimson tracking-[0.32em]">◆&nbsp;&nbsp;Confirm</div>
+            <h3 className="mt-3 font-serif text-2xl text-ink leading-tight">Go back a level?</h3>
+            <p className="mt-3 body-md text-ink-dim">
               {confirm.kind === 'skip'
                 ? `${WORKOUT_META[confirm.type].name}: Level ${confirm.from} → Level ${confirm.to}.`
                 : (() => {
@@ -150,7 +159,8 @@ export default function Plan() {
                     return `${name}: Level ${confirm.from} → Level ${confirm.to}.`;
                   })()}
             </p>
-            <div className="mt-4 flex gap-3">
+            <div className="hairline mt-5" />
+            <div className="mt-5 flex gap-3">
               <Button
                 variant="secondary"
                 size="md"

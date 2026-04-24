@@ -13,7 +13,6 @@ function lastSessionSummary(lastEntry) {
   if (!lastEntry) return null;
   const completed = (lastEntry.sets || []).filter((s) => s.completed);
   if (completed.length === 0) return null;
-  // Find heaviest weight.
   let heaviest = 0;
   let repsAtHeaviest = 0;
   for (const s of completed) {
@@ -40,34 +39,39 @@ export default function ExerciseIntro({
   const lastText = lastSessionSummary(lastEntry);
 
   return (
-    <div className="flex-1 flex flex-col px-5 pt-6 pb-6">
-      <div className="text-xs text-neutral-500 uppercase tracking-wider">
-        Exercise {exerciseIndex + 1} of {totalExercises}
+    <div className="flex-1 flex flex-col px-6 pt-8 pb-7">
+      <div className="label-md text-ink-faint">
+        Exercise <span className="text-crimson tabular">{String(exerciseIndex + 1).padStart(2, '0')}</span> · of {String(totalExercises).padStart(2, '0')}
       </div>
-      <h2 className="mt-1 text-3xl font-semibold text-neutral-100">{exercise.name}</h2>
-      <div className="mt-1 text-sm text-neutral-400">
+      <h2 className="mt-3 font-serif text-4xl font-light text-ink leading-tight">
+        {exercise.name}
+      </h2>
+      <div className="mt-3 font-mono text-sm tabular text-ink-dim">
         {exercise.sets} sets × {repText} · {restText} {tempoText}
       </div>
 
       {lastText ? (
-        <div className="mt-4 rounded-xl bg-neutral-900 border border-neutral-800 px-4 py-3">
-          <div className="text-xs uppercase tracking-wider text-neutral-500">Last time</div>
-          <div className="mt-1 text-sm font-mono text-neutral-200">{lastText}</div>
+        <div className="mt-5 border-l-2 border-crimson bg-surface-low px-4 py-3">
+          <div className="label-md text-ink-faint">Last time</div>
+          <div className="mt-1 font-mono tabular text-base text-ink">{lastText}</div>
         </div>
       ) : null}
 
-      <div className="mt-6 flex-1">
-        <div className="text-xs uppercase tracking-wider text-neutral-500 mb-2">Form cues</div>
+      <div className="mt-7 flex-1">
+        <div className="flex items-center gap-4 mb-4">
+          <span className="label-md text-ink-faint">Form cues</span>
+          <span className="hairline flex-1" />
+        </div>
         <FormCueList cues={exercise.formCues} />
       </div>
 
-      <div className="mt-6 space-y-3">
+      <div className="mt-7 space-y-3">
         <Button variant="primary" size="lg" className="w-full" onClick={onStart}>
           Start exercise
         </Button>
         <button
           onClick={onSkip}
-          className="w-full text-sm text-neutral-500 hover:text-neutral-300 py-2"
+          className="w-full label-md text-ink-faint hover:text-crimson py-2 transition-colors"
         >
           Skip exercise
         </button>

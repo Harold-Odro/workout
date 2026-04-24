@@ -133,6 +133,40 @@ body {
 .hairline { height: 1px; background: var(--color-hairline); }
 .hairline-strong { height: 1px; background: var(--color-hairline-strong); }
 
+/* tonal card — borderless, lifts via background tone */
+.tonal {
+  background: var(--color-surface-low);
+  border: 1px solid var(--color-hairline);
+}
+.tonal-flush {
+  background: var(--color-surface-1);
+}
+
+/* section eyebrow used at the top of cards/charts */
+.eyebrow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.eyebrow > h2 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  color: var(--color-ink);
+}
+.eyebrow > .meta {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
 /* ---------- crimson glow (used very sparingly) ---------- */
 .crimson-glow {
   box-shadow:

@@ -3,12 +3,12 @@ import { formatDateShort, formatMMSS } from '../lib/time.js';
 
 function Row({ label, value, sub }) {
   return (
-    <div className="flex items-baseline justify-between py-3 border-b border-neutral-900 last:border-b-0">
+    <div className="flex items-baseline justify-between py-4 border-b border-hairline last:border-b-0">
       <div className="min-w-0 pr-3">
-        <div className="text-sm text-neutral-200">{label}</div>
-        {sub ? <div className="text-xs text-neutral-500 mt-0.5">{sub}</div> : null}
+        <div className="font-serif text-base text-ink leading-tight">{label}</div>
+        {sub ? <div className="label-md text-ink-faint mt-1.5 tabular">{sub}</div> : null}
       </div>
-      <div className="font-mono text-base text-green-500 shrink-0">{value}</div>
+      <div className="font-mono tabular text-xl text-crimson shrink-0 leading-none">{value}</div>
     </div>
   );
 }
@@ -21,12 +21,15 @@ export default function PRList({ prs }) {
     prs.lowestEnduranceRpe != null;
 
   return (
-    <div className="rounded-2xl bg-neutral-900 border border-neutral-800 p-4">
-      <h2 className="text-sm uppercase tracking-wider text-neutral-500 mb-2">
-        Personal records
-      </h2>
+    <div className="tonal p-6">
+      <div className="eyebrow">
+        <h2>Personal records</h2>
+        <span className="meta">All&nbsp;time</span>
+      </div>
+      <div className="hairline mb-2" />
+
       {!hasAny ? (
-        <p className="text-sm text-neutral-500 py-4 text-center">
+        <p className="font-serif italic text-ink-dim text-center py-6">
           Log a few sessions to start setting records.
         </p>
       ) : (

@@ -88,21 +88,22 @@ export default function Log({ setToast }) {
     : 0;
 
   return (
-    <div className="min-h-full pt-safe pb-10">
-      <header className="px-5 pt-6 pb-4">
-        <div className="text-xs uppercase tracking-widest text-green-500">
-          {editingId ? 'Edit session' : 'Workout complete'}
+    <div className="min-h-full pt-safe pb-12">
+      <header className="px-8 pt-12 pb-2">
+        <div className="label-md text-crimson tracking-[0.32em]">
+          ◆&nbsp;&nbsp;{editingId ? 'Edit session' : 'Workout complete'}
         </div>
-        <h1 className="mt-1 text-2xl font-semibold text-neutral-100">
+        <h1 className="mt-3 font-serif text-4xl font-light text-ink leading-tight">
           {meta?.name || draft.type}
         </h1>
-        <div className="mt-1 text-sm text-neutral-400">
+        <div className="mt-3 font-mono text-sm tabular text-ink-dim">
           {formatDuration(draft.durationSeconds)}
           {isPPL && totalSets > 0 ? ` · ${totalSets} set${totalSets === 1 ? '' : 's'}` : ''}
           {!isPPL && draft.plannedRounds
             ? ` · ${draft.plannedRounds} rounds planned`
             : ''}
         </div>
+        <div className="hairline-strong mt-6" />
       </header>
 
       <form
@@ -110,20 +111,24 @@ export default function Log({ setToast }) {
           e.preventDefault();
           handleSave();
         }}
-        className="px-5 space-y-5"
+        className="px-8 mt-8 space-y-8"
       >
         {isPPL && draft.exercises?.length > 0 ? (
           <div>
-            <label className="block text-sm text-neutral-400 mb-2">
-              Exercise summary
-            </label>
+            <div className="flex items-center gap-4 mb-4">
+              <span className="label-md text-crimson tracking-[0.2em]">Exercise summary</span>
+              <span className="hairline flex-1" />
+              <span className="font-mono text-[10px] tabular tracking-[0.18em] text-ink-faint">
+                {String(draft.exercises.length).padStart(2, '0')}
+              </span>
+            </div>
             <ExerciseBreakdown exercises={draft.exercises} defaultOpen={false} />
           </div>
         ) : null}
 
         {!isPPL ? (
           <div>
-            <label htmlFor="rounds" className="block text-sm text-neutral-400 mb-1">
+            <label htmlFor="rounds" className="block label-md text-ink-faint mb-2">
               Completed rounds
             </label>
             <input
@@ -134,26 +139,26 @@ export default function Log({ setToast }) {
               max={(draft.plannedRounds || 0) + 10}
               value={completedRounds}
               onChange={(e) => setCompletedRounds(e.target.value)}
-              className="w-full rounded-xl bg-neutral-900 border border-neutral-800 px-4 py-3 text-lg text-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
+              className="w-full bg-transparent border-0 border-b border-hairline-strong pb-3 pt-1 font-serif font-light text-3xl tabular text-ink focus:outline-none focus:border-crimson transition-colors"
             />
           </div>
         ) : null}
 
         <div>
-          <label className="block text-sm text-neutral-400 mb-1">Duration</label>
-          <div className="w-full rounded-xl bg-neutral-900 border border-neutral-800 px-4 py-3 text-lg text-neutral-300">
+          <div className="label-md text-ink-faint mb-2">Duration</div>
+          <div className="font-serif font-light text-3xl tabular text-ink-dim border-b border-hairline-strong pb-3">
             {formatDuration(draft.durationSeconds)}
           </div>
         </div>
 
         <div>
-          <div className="flex items-baseline justify-between mb-2">
-            <label htmlFor="rpe" className="text-sm text-neutral-400">
-              Overall effort (RPE)
+          <div className="flex items-baseline justify-between mb-3">
+            <label htmlFor="rpe" className="label-md text-ink-faint">
+              Overall effort · RPE
             </label>
-            <div className="text-sm">
-              <span className="font-mono text-2xl text-green-500">{rpe}</span>
-              <span className="ml-2 text-neutral-400">{rpeDescriptor(rpe)}</span>
+            <div>
+              <span className="font-serif font-light text-3xl tabular text-crimson">{rpe}</span>
+              <span className="ml-3 font-serif italic text-ink-dim">{rpeDescriptor(rpe)}</span>
             </div>
           </div>
           <input
@@ -164,17 +169,17 @@ export default function Log({ setToast }) {
             step="1"
             value={rpe}
             onChange={(e) => setRpe(Number(e.target.value))}
-            className="w-full accent-green-500 h-2"
+            className="w-full accent-crimson-bright h-1"
           />
-          <div className="mt-1 flex justify-between text-xs text-neutral-500">
+          <div className="mt-2 flex justify-between label-md text-ink-faint">
             <span>Easy</span>
             <span>Max effort</span>
           </div>
         </div>
 
         <div>
-          <label htmlFor="notes" className="block text-sm text-neutral-400 mb-1">
-            Notes (optional)
+          <label htmlFor="notes" className="block label-md text-ink-faint mb-2">
+            Notes · optional
           </label>
           <textarea
             id="notes"
@@ -182,7 +187,7 @@ export default function Log({ setToast }) {
             onChange={(e) => setNotes(e.target.value)}
             placeholder="How did it feel? Any pain? Energy level?"
             rows={4}
-            className="w-full rounded-xl bg-neutral-900 border border-neutral-800 px-4 py-3 text-neutral-100 placeholder:text-neutral-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 resize-none"
+            className="w-full bg-surface-low border border-hairline-strong px-4 py-3 font-serif text-base text-ink placeholder:text-ink-faint placeholder:italic focus:outline-none focus:border-crimson transition-colors resize-none rounded"
           />
         </div>
 
@@ -193,7 +198,7 @@ export default function Log({ setToast }) {
           <button
             type="button"
             onClick={handleDiscard}
-            className="mt-4 w-full text-sm text-neutral-500 hover:text-neutral-300 py-2"
+            className="mt-5 w-full label-md text-ink-faint hover:text-crimson py-2 transition-colors"
           >
             {editingId ? 'Cancel' : 'Discard'}
           </button>
