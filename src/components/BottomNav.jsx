@@ -10,7 +10,7 @@ const TABS = [
 export default function BottomNav() {
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-30 bg-[var(--color-surface-dim)]/95 backdrop-blur-md pb-safe"
+      className="fixed bottom-0 inset-x-0 z-30 bg-(--color-surface-dim)/95 backdrop-blur-md pb-safe"
       aria-label="Primary"
     >
       <div className="hairline-strong" />
@@ -23,11 +23,11 @@ export default function BottomNav() {
               className={({ isActive }) =>
                 [
                   'group relative flex flex-col items-center justify-center gap-1.5',
-                  'min-h-[72px] py-3 transition-colors duration-300',
+                  'min-h-18 py-3 transition-colors duration-300',
                   'focus:outline-none',
                   isActive
-                    ? 'text-[var(--color-crimson)]'
-                    : 'text-[var(--color-ink-faint)] hover:text-[var(--color-ink)]',
+                    ? 'text-crimson'
+                    : 'text-ink-faint hover:text-ink',
                 ].join(' ')
               }
             >
@@ -36,7 +36,7 @@ export default function BottomNav() {
                   <span
                     className={[
                       'font-mono text-[10px] tracking-[0.18em]',
-                      isActive ? 'text-[var(--color-crimson-bright)]' : 'text-[var(--color-ink-faint)]/70',
+                      isActive ? 'text-crimson-bright' : 'text-ink-faint/70',
                     ].join(' ')}
                   >
                     {num}
@@ -45,10 +45,10 @@ export default function BottomNav() {
                   <span
                     aria-hidden
                     className={[
-                      'absolute top-0 left-1/2 -translate-x-1/2 h-[2px] w-8 origin-center',
+                      'absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 origin-center',
                       'transition-all duration-500',
                       isActive
-                        ? 'bg-[var(--color-crimson-bright)] scale-x-100 opacity-100'
+                        ? 'bg-crimson-bright scale-x-100 opacity-100'
                         : 'bg-transparent scale-x-0 opacity-0',
                     ].join(' ')}
                   />

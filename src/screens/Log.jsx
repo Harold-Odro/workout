@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Button from '../components/Button.jsx';
 import ExerciseBreakdown from '../components/ExerciseBreakdown.jsx';
+import SessionReceipt, { findPR } from '../components/SessionReceipt.jsx';
 import { WORKOUT_META } from '../lib/workouts.js';
 import { PPL_META } from '../lib/workoutsPPL.js';
 import { formatDuration } from '../lib/time.js';
 import {
   addPendingExerciseProgression,
+  getSessions,
   getState,
   saveSession,
   setPendingProgression,
@@ -40,6 +42,26 @@ export default function Log({ setToast }) {
   );
   const [rpe, setRpe] = useState(typeof draft.rpe === 'number' ? draft.rpe : 6);
   const [notes, setNotes] = useState(draft.notes || '');
+
+  // Snapshot prior sessions ONCE at mount. The draft hasn't been saved yet,
+  // so this is the correct "before" set for PR detection. We deliberately
+  // don't update this when the user re-opens the screen via edit (handled
+  // by the editingId branch below).
+  const priorSessions = useMemo(() => (editingId ? [] : getSessions()), [editingId]);
+  const showReceipt = !editingId && !draft.skipped;
+  const prLabel = useMemo(
+    () => (showReceipt ? findPR({ draft, priorSessions }) : null),
+    [showReceipt, draft, priorSessions]
+  );
+
+  // Soft haptic on arrival; a heavier pattern if a PR is present.
+  useEffect(() => {
+    if (!showReceipt) return;
+    try {
+      if (prLabel) navigator.vibrate?.([60, 50, 120]);
+      else navigator.vibrate?.(40);
+    } catch {}
+  }, [showReceipt, prLabel]);
 
   function handleSave() {
     const patch = {
@@ -105,6 +127,15 @@ export default function Log({ setToast }) {
         </div>
         <div className="hairline-strong mt-6" />
       </header>
+
+      {showReceipt ? (
+        <section className="px-8 mt-10" aria-label="Session ticket">
+          <SessionReceipt draft={draft} priorSessions={priorSessions} />
+          <p className="mt-6 font-serif italic text-center text-ink-dim text-sm">
+            Sign off below to file it.
+          </p>
+        </section>
+      ) : null}
 
       <form
         onSubmit={(e) => {

@@ -223,3 +223,104 @@ body {
   background: var(--color-crimson-bright);
   color: #ffffff;
 }
+
+/* ===========================================================
+   RECEIPT
+   A printed-receipt block. Cream paper that contrasts hard
+   against the dark surface, monospace ledger, perforated tear.
+   =========================================================== */
+
+.receipt {
+  position: relative;
+  background: #f0e9da;
+  color: #161310;
+  padding: 28px 24px 20px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  /* a touch of warm receipt grain */
+  background-image:
+    linear-gradient(transparent 0, transparent 100%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.08  0 0 0 0 0.07  0 0 0 0 0.05  0 0 0 0.4 0'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.4),
+    0 12px 40px -12px rgba(0, 0, 0, 0.55);
+  /* very slight rotation makes it feel placed, not screwed in */
+  transform: rotate(-0.3deg);
+}
+
+.receipt-perf-top,
+.receipt-perf-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 12px;
+  pointer-events: none;
+  /* perforated zig-zag edge cut from the paper */
+  background:
+    radial-gradient(circle at 6px 0, transparent 5px, #f0e9da 5.5px) repeat-x;
+  background-size: 12px 12px;
+}
+.receipt-perf-top    { top: -6px;    transform: rotate(180deg); }
+.receipt-perf-bottom { bottom: -6px; }
+
+.receipt-rule {
+  height: 1px;
+  background-image: repeating-linear-gradient(
+    to right,
+    rgba(22, 19, 16, 0.55) 0 2px,
+    transparent 2px 5px
+  );
+  margin: 10px 0;
+}
+
+.receipt-rule-double {
+  height: 4px;
+  background:
+    linear-gradient(to bottom, #161310 0 1px, transparent 1px 3px, #161310 3px 4px);
+  margin: 10px 0;
+}
+
+.receipt-stamp {
+  display: inline-block;
+  padding: 4px 10px 3px;
+  border: 2px solid var(--color-crimson-deep);
+  color: var(--color-crimson-deep);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  font-weight: 700;
+  transform: rotate(-4deg);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.receipt-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.receipt-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(22, 19, 16, 0.55);
+}
+
+@keyframes receiptDrop {
+  0%   { opacity: 0; transform: translateY(-22px) rotate(-1.5deg); }
+  60%  { opacity: 1; transform: translateY(2px)  rotate(-0.5deg); }
+  100% { opacity: 1; transform: translateY(0)    rotate(-0.3deg); }
+}
+@keyframes stampPress {
+  0%   { opacity: 0; transform: rotate(-12deg) scale(1.6); }
+  70%  { opacity: 1; transform: rotate(-3deg)  scale(0.95); }
+  100% { opacity: 1; transform: rotate(-4deg)  scale(1); }
+}
+.receipt-drop  { animation: receiptDrop 700ms cubic-bezier(.2,.7,.2,1) both; }
+.stamp-press   { animation: stampPress 600ms cubic-bezier(.2,.7,.2,1) 350ms both; }
