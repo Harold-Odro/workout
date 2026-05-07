@@ -118,6 +118,100 @@ export function computeSessionsPerWeek(sessions, weeks = 12) {
   }));
 }
 
+// ---------- This week at a glance ----------
+
+export const DEFAULT_WEEKLY_TARGET = 4;
+
+export function weeklyProgress(sessions, target = DEFAULT_WEEKLY_TARGET) {
+  const now = new Date();
+  const weekStart = startOfWeek(now, WEEK_OPTS);
+  const weekEnd = endOfWeek(now, WEEK_OPTS);
+  const completed = nonSkippedSessions(sessions).filter((s) => {
+    const d = sessionDate(s);
+    return d >= weekStart && d <= weekEnd;
+  }).length;
+  return {
+    completed,
+    target,
+    remaining: Math.max(0, target - completed),
+    percent: target > 0 ? Math.min(1, completed / target) : 0,
+    streak: computeWeeklyStreak(sessions),
+  };
+}
+
+// ---------- Next-workout suggestion ----------
+
+// Pick what the user should probably do today. Heuristic, not prescription —
+// the user can always override by picking directly from the list.
+//
+// Skip program:
+//   Rotate through WORKOUT_TYPES. Prefer the type that hasn't been done in
+//   the longest time; break ties with the order in WORKOUT_TYPES.
+//
+// PPL program:
+//   Classic Push / Pull / Legs rotation. If nothing logged in the last 3 days,
+//   start with Push; otherwise advance from the most recent (Push→Pull→Legs→Push).
+//
+// Returns { type, reason } or null if we have no opinion.
+export function suggestNextWorkout(sessions, program, types) {
+  const done = nonSkippedSessions(sessions)
+    .filter((s) => (s.program || 'skip') === program)
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+  if (!types || types.length === 0) return null;
+
+  if (done.length === 0) {
+    return { type: types[0], reason: 'First session — start here' };
+  }
+
+  // Days since each type was last done.
+  const today = new Date();
+  const lastSeen = new Map();
+  for (const s of done) {
+    if (!types.includes(s.type)) continue;
+    if (lastSeen.has(s.type)) continue; // first occurrence = most recent (sorted desc)
+    lastSeen.set(s.type, differenceInCalendarDays(today, sessionDate(s)));
+  }
+
+  // PPL rotation: if we did Push yesterday, suggest Pull, etc.
+  if (program === 'ppl') {
+    const rotation = types.filter((t) => t !== 'circuit');
+    const mostRecent = done[0];
+    const daysSinceLast = differenceInCalendarDays(today, sessionDate(mostRecent));
+
+    if (daysSinceLast >= 3) {
+      const t = rotation[0];
+      return { type: t, reason: `${daysSinceLast} days off — ease back in` };
+    }
+
+    const idx = rotation.indexOf(mostRecent.type);
+    if (idx >= 0) {
+      const next = rotation[(idx + 1) % rotation.length];
+      const metaReason = {
+        push: 'Push follows Legs',
+        pull: 'Pull follows Push',
+        legs: 'Legs follows Pull',
+      }[next];
+      return { type: next, reason: metaReason || 'Next in rotation' };
+    }
+    return { type: rotation[0], reason: 'Restart the rotation' };
+  }
+
+  // Skip: pick the type least-recently done (or never done).
+  let best = types[0];
+  let bestDays = -1;
+  for (const t of types) {
+    const d = lastSeen.has(t) ? lastSeen.get(t) : Infinity;
+    if (d > bestDays) { bestDays = d; best = t; }
+  }
+  const reason =
+    bestDays === Infinity ? 'Haven’t tried this yet'
+    : bestDays >= 7       ? `${bestDays} days since last time`
+    : bestDays >= 2       ? `Rested ${bestDays} days`
+    : 'Keep the rotation moving';
+  return { type: best, reason };
+}
+
 // ---------- Heatmap ----------
 
 export function computeHeatmap(sessions, weeks = 12) {

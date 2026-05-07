@@ -15,7 +15,7 @@ export const PPL_TYPES = ['push', 'pull', 'legs', 'circuit'];
 export const PPL_META = {
   push:    { id: 'push',    name: 'Push Day',                 tagline: 'Chest · shoulders · triceps' },
   pull:    { id: 'pull',    name: 'Pull Day',                 tagline: 'Back · rear delts · biceps' },
-  legs:    { id: 'legs',    name: 'Legs + Conditioning',      tagline: 'Legs · glutes · skipping finisher' },
+  legs:    { id: 'legs',    name: 'Legs + Core',              tagline: 'Legs · glutes · core' },
   circuit: { id: 'circuit', name: 'Weekly Definition Circuit', tagline: 'Optional 5-round full-body circuit' },
 };
 
@@ -26,6 +26,17 @@ export const PPL_META = {
 
 const EXERCISE_DEFS = {
   // Push
+  'pushups': {
+    id: 'pushups',
+    name: 'Pushups',
+    unilateral: false,
+    amrap: false,
+    formCues: [
+      'Hands under shoulders, body in a straight line',
+      'Lower with control, chest to the floor',
+      'Full lockout at the top, brace the core',
+    ],
+  },
   'db-floor-press': {
     id: 'db-floor-press',
     name: 'Dumbbell Floor Press',
@@ -35,17 +46,6 @@ const EXERCISE_DEFS = {
       'Lie on floor, knees bent, dumbbells at chest',
       'Press straight up, lower until elbows lightly touch the floor',
       'Shoulder blades tucked, wrists stacked over elbows',
-    ],
-  },
-  'feet-elevated-pushups': {
-    id: 'feet-elevated-pushups',
-    name: 'Feet-Elevated Push-Ups',
-    unilateral: false,
-    amrap: true,
-    formCues: [
-      'Feet on a sturdy surface, hands slightly wider than shoulders',
-      'Lower with control until chest is just off the floor',
-      'Drive up, keep core braced — stop short of form breakdown',
     ],
   },
   'db-shoulder-press': {
@@ -70,39 +70,28 @@ const EXERCISE_DEFS = {
       'Lower slowly, do not rest at the bottom',
     ],
   },
-  'db-squeeze-press': {
-    id: 'db-squeeze-press',
-    name: 'Dumbbell Squeeze Press',
+  'chair-dips': {
+    id: 'chair-dips',
+    name: 'Chair Dips',
     unilateral: false,
     amrap: false,
     formCues: [
-      'Press two dumbbells together hard the whole set',
-      'Lower to mid-chest, press straight up',
-      'Feel the squeeze in your chest, not your arms',
-    ],
-  },
-  'overhead-tri-extension': {
-    id: 'overhead-tri-extension',
-    name: 'Overhead Triceps Extension',
-    unilateral: false,
-    amrap: false,
-    formCues: [
-      'One or two-handed dumbbell held overhead',
-      'Lower behind the head with control, elbows pointing forward',
-      'Keep elbows close — no flaring out',
+      'Hands on the edge of a sturdy chair, legs out',
+      'Lower until elbows reach ~90°, elbows tracking back',
+      'Press up powerfully — targets triceps and chest',
     ],
   },
 
   // Pull
   'one-arm-row': {
     id: 'one-arm-row',
-    name: 'One-Arm Dumbbell Rows',
+    name: 'Dumbbell Rows',
     unilateral: true,
     amrap: false,
     formCues: [
       'Hand and knee on a bench, flat back',
       'Row dumbbell to hip, lead with the elbow',
-      'Squeeze at the top, lower under control',
+      'Focus on squeezing the back muscles',
     ],
   },
   'bent-over-row': {
@@ -112,30 +101,30 @@ const EXERCISE_DEFS = {
     amrap: false,
     formCues: [
       'Hinge at the hips, flat back, dumbbells hanging',
-      'Row to lower ribs, elbows tucked at ~45°',
-      'Pause briefly at the top before lowering',
-    ],
-  },
-  'romanian-deadlift': {
-    id: 'romanian-deadlift',
-    name: 'Romanian Deadlift',
-    unilateral: false,
-    amrap: false,
-    formCues: [
-      'Soft knees, hinge at the hips, dumbbells in front of thighs',
-      'Lower with a flat back until you feel a hamstring stretch',
-      'Drive hips forward to stand — do not overextend at the top',
+      'Row to lower ribs, elbows tucked back',
+      'Keep back straight — no rounding',
     ],
   },
   'rear-delt-raises': {
     id: 'rear-delt-raises',
-    name: 'Rear Delt Raises',
+    name: 'Rear Delt Flys',
     unilateral: false,
     amrap: false,
     formCues: [
       'Hinge forward, slight bend in the elbows',
       'Raise dumbbells out to the sides, squeeze rear delts',
-      'Keep the neck relaxed — do not shrug',
+      'Great for posture and the upper back',
+    ],
+  },
+  'bicep-curls': {
+    id: 'bicep-curls',
+    name: 'Bicep Curls',
+    unilateral: false,
+    amrap: false,
+    formCues: [
+      'Elbows pinned to sides, palms up',
+      'Curl with control — no swinging',
+      'Lower fully on every rep',
     ],
   },
   'hammer-curls': {
@@ -146,18 +135,7 @@ const EXERCISE_DEFS = {
     formCues: [
       'Neutral grip (palms facing each other)',
       'Curl with control, keep elbows pinned to your sides',
-      'Lower fully — no half reps',
-    ],
-  },
-  'alt-db-curls': {
-    id: 'alt-db-curls',
-    name: 'Alternating Dumbbell Curls',
-    unilateral: false,
-    amrap: false,
-    formCues: [
-      'Supinate (rotate palm up) as you curl',
-      'Alternate arms, no swinging',
-      'Brief pause at the top, slow the lowering',
+      'Targets forearms and arm thickness',
     ],
   },
 
@@ -169,19 +147,19 @@ const EXERCISE_DEFS = {
     amrap: false,
     formCues: [
       'Dumbbell held at chest, elbows tucked',
-      'Squat down, chest up, knees tracking over toes',
+      'Squat down deeply, chest up',
       'Drive up through the whole foot',
     ],
   },
-  'bulgarian-split-squat': {
-    id: 'bulgarian-split-squat',
-    name: 'Bulgarian Split Squats',
-    unilateral: true,
+  'romanian-deadlift': {
+    id: 'romanian-deadlift',
+    name: 'Romanian Deadlift',
+    unilateral: false,
     amrap: false,
     formCues: [
-      'Rear foot on a bench, torso upright',
-      'Lower until the front thigh is parallel',
-      'Drive through the front heel to stand',
+      'Soft knees, hinge at the hips, dumbbells in front of thighs',
+      'Lower with a flat back until you feel a hamstring stretch',
+      'Drive hips forward to stand — do not overextend at the top',
     ],
   },
   'walking-lunges': {
@@ -206,30 +184,6 @@ const EXERCISE_DEFS = {
       'Lower slowly below neutral for full range',
     ],
   },
-  'db-thrusters': {
-    id: 'db-thrusters',
-    name: 'Dumbbell Thrusters',
-    unilateral: false,
-    amrap: false,
-    formCues: [
-      'Dumbbells at shoulders, squat down',
-      'Drive up and press overhead in one motion',
-      'Lock out briefly, return to the shoulders',
-    ],
-  },
-
-  // Circuit-only additions (the circuit reuses existing ids too)
-  'circuit-pushups': {
-    id: 'circuit-pushups',
-    name: 'Push-Ups',
-    unilateral: false,
-    amrap: false,
-    formCues: [
-      'Hands under shoulders, body in a straight line',
-      'Lower until chest is just off the floor',
-      'Drive up, brace the core — no sagging hips',
-    ],
-  },
 };
 
 // ---------- Level ladders (per-exercise) ----------
@@ -239,32 +193,27 @@ const EXERCISE_DEFS = {
 
 const LEVELS = {
   // Push
+  'pushups': [
+    { level: 1, sets: 4, targetReps: [10, 20], restSeconds: 60, tempo: '3-1-X' },
+    { level: 2, sets: 4, targetReps: [12, 20], restSeconds: 60, tempo: '3-1-X' },
+    { level: 3, sets: 4, targetReps: [15, 20], restSeconds: 45, tempo: '3-1-X' },
+  ],
   'db-floor-press': [
     { level: 1, sets: 4, targetReps: [10, 15], restSeconds: 60, tempo: '3-1-X' },
     { level: 2, sets: 4, targetReps: [12, 15], restSeconds: 60, tempo: '3-1-X' },
     { level: 3, sets: 4, targetReps: [12, 15], restSeconds: 45, tempo: '3-1-X' },
   ],
-  'feet-elevated-pushups': [
-    { level: 1, sets: 3, targetReps: null, targetRepsNote: 'AMRAP', restSeconds: 60, tempo: '3-1-X' },
-    { level: 2, sets: 4, targetReps: null, targetRepsNote: 'AMRAP', restSeconds: 60, tempo: '3-1-X' },
-    { level: 3, sets: 4, targetReps: null, targetRepsNote: 'AMRAP', restSeconds: 45, tempo: '3-1-X' },
-  ],
   'db-shoulder-press': [
-    { level: 1, sets: 4, targetReps: [8, 12],  restSeconds: 60, tempo: '3-1-X' },
-    { level: 2, sets: 4, targetReps: [10, 12], restSeconds: 60, tempo: '3-1-X' },
-    { level: 3, sets: 4, targetReps: [10, 12], restSeconds: 45, tempo: '3-1-X' },
+    { level: 1, sets: 3, targetReps: [10, 15], restSeconds: 60, tempo: '3-1-X' },
+    { level: 2, sets: 3, targetReps: [12, 15], restSeconds: 60, tempo: '3-1-X' },
+    { level: 3, sets: 3, targetReps: [12, 15], restSeconds: 45, tempo: '3-1-X' },
   ],
   'lateral-raises': [
-    { level: 1, sets: 3, targetReps: [12, 15], restSeconds: 45, tempo: '3-1-X' },
-    { level: 2, sets: 4, targetReps: [12, 15], restSeconds: 45, tempo: '3-1-X' },
-    { level: 3, sets: 4, targetReps: [15, 15], restSeconds: 45, tempo: '3-1-X' },
+    { level: 1, sets: 3, targetReps: [12, 20], restSeconds: 45, tempo: '3-1-X' },
+    { level: 2, sets: 3, targetReps: [15, 20], restSeconds: 45, tempo: '3-1-X' },
+    { level: 3, sets: 3, targetReps: [15, 20], restSeconds: 30, tempo: '3-1-X' },
   ],
-  'db-squeeze-press': [
-    { level: 1, sets: 3, targetReps: [12, 12], restSeconds: 60, tempo: '3-1-X' },
-    { level: 2, sets: 3, targetReps: [12, 12], restSeconds: 45, tempo: '3-1-X' },
-    { level: 3, sets: 4, targetReps: [12, 12], restSeconds: 45, tempo: '3-1-X' },
-  ],
-  'overhead-tri-extension': [
+  'chair-dips': [
     { level: 1, sets: 3, targetReps: [10, 15], restSeconds: 60, tempo: '3-1-X' },
     { level: 2, sets: 3, targetReps: [12, 15], restSeconds: 45, tempo: '3-1-X' },
     { level: 3, sets: 4, targetReps: [12, 15], restSeconds: 45, tempo: '3-1-X' },
@@ -272,46 +221,41 @@ const LEVELS = {
 
   // Pull
   'one-arm-row': [
-    { level: 1, sets: 4, targetReps: [10, 12], restSeconds: 60, tempo: '3-1-X', unilateralNote: 'per side' },
-    { level: 2, sets: 4, targetReps: [12, 12], restSeconds: 60, tempo: '3-1-X', unilateralNote: 'per side' },
-    { level: 3, sets: 4, targetReps: [12, 12], restSeconds: 45, tempo: '3-1-X', unilateralNote: 'per side' },
+    { level: 1, sets: 4, targetReps: [10, 15], restSeconds: 60, tempo: '3-1-X', unilateralNote: 'each arm' },
+    { level: 2, sets: 4, targetReps: [12, 15], restSeconds: 60, tempo: '3-1-X', unilateralNote: 'each arm' },
+    { level: 3, sets: 4, targetReps: [12, 15], restSeconds: 45, tempo: '3-1-X', unilateralNote: 'each arm' },
   ],
   'bent-over-row': [
-    { level: 1, sets: 4, targetReps: [12, 12], restSeconds: 60, tempo: '3-1-X' },
-    { level: 2, sets: 4, targetReps: [12, 15], restSeconds: 60, tempo: '3-1-X' },
+    { level: 1, sets: 3, targetReps: [10, 15], restSeconds: 60, tempo: '3-1-X' },
+    { level: 2, sets: 3, targetReps: [12, 15], restSeconds: 60, tempo: '3-1-X' },
+    { level: 3, sets: 3, targetReps: [12, 15], restSeconds: 45, tempo: '3-1-X' },
+  ],
+  'rear-delt-raises': [
+    { level: 1, sets: 3, targetReps: [12, 15], restSeconds: 45, tempo: '3-1-X' },
+    { level: 2, sets: 3, targetReps: [15, 15], restSeconds: 45, tempo: '3-1-X' },
+    { level: 3, sets: 3, targetReps: [15, 15], restSeconds: 30, tempo: '3-1-X' },
+  ],
+  'bicep-curls': [
+    { level: 1, sets: 4, targetReps: [10, 15], restSeconds: 60, tempo: '3-1-X' },
+    { level: 2, sets: 4, targetReps: [12, 15], restSeconds: 45, tempo: '3-1-X' },
     { level: 3, sets: 4, targetReps: [12, 15], restSeconds: 45, tempo: '3-1-X' },
+  ],
+  'hammer-curls': [
+    { level: 1, sets: 3, targetReps: [10, 15], restSeconds: 60, tempo: '3-1-X' },
+    { level: 2, sets: 3, targetReps: [12, 15], restSeconds: 45, tempo: '3-1-X' },
+    { level: 3, sets: 3, targetReps: [12, 15], restSeconds: 45, tempo: '3-1-X' },
+  ],
+
+  // Legs
+  'goblet-squat': [
+    { level: 1, sets: 4, targetReps: [12, 20], restSeconds: 60, tempo: '3-1-X' },
+    { level: 2, sets: 4, targetReps: [15, 20], restSeconds: 45, tempo: '3-1-X' },
+    { level: 3, sets: 4, targetReps: [15, 20], restSeconds: 45, tempo: '4-1-X' },
   ],
   'romanian-deadlift': [
     { level: 1, sets: 4, targetReps: [10, 12], restSeconds: 60, tempo: '3-1-X' },
     { level: 2, sets: 4, targetReps: [12, 12], restSeconds: 60, tempo: '3-1-X' },
     { level: 3, sets: 4, targetReps: [12, 12], restSeconds: 45, tempo: '3-1-X' },
-  ],
-  'rear-delt-raises': [
-    { level: 1, sets: 3, targetReps: [15, 15], restSeconds: 45, tempo: '3-1-X' },
-    { level: 2, sets: 4, targetReps: [15, 15], restSeconds: 45, tempo: '3-1-X' },
-    { level: 3, sets: 4, targetReps: [15, 15], restSeconds: 30, tempo: '3-1-X' },
-  ],
-  'hammer-curls': [
-    { level: 1, sets: 3, targetReps: [10, 12], restSeconds: 60, tempo: '3-1-X' },
-    { level: 2, sets: 3, targetReps: [12, 12], restSeconds: 45, tempo: '3-1-X' },
-    { level: 3, sets: 4, targetReps: [12, 12], restSeconds: 45, tempo: '3-1-X' },
-  ],
-  'alt-db-curls': [
-    { level: 1, sets: 3, targetReps: [10, 12], restSeconds: 60, tempo: '3-1-X' },
-    { level: 2, sets: 3, targetReps: [12, 12], restSeconds: 45, tempo: '3-1-X' },
-    { level: 3, sets: 4, targetReps: [12, 12], restSeconds: 45, tempo: '3-1-X' },
-  ],
-
-  // Legs
-  'goblet-squat': [
-    { level: 1, sets: 4, targetReps: [15, 15], restSeconds: 60, tempo: '3-1-X' },
-    { level: 2, sets: 4, targetReps: [15, 15], restSeconds: 45, tempo: '3-1-X' },
-    { level: 3, sets: 4, targetReps: [15, 15], restSeconds: 45, tempo: '4-1-X' },
-  ],
-  'bulgarian-split-squat': [
-    { level: 1, sets: 3, targetReps: [8, 10],  restSeconds: 60, tempo: '3-1-X', unilateralNote: 'per leg' },
-    { level: 2, sets: 3, targetReps: [10, 10], restSeconds: 60, tempo: '3-1-X', unilateralNote: 'per leg' },
-    { level: 3, sets: 4, targetReps: [10, 10], restSeconds: 45, tempo: '3-1-X', unilateralNote: 'per leg' },
   ],
   'walking-lunges': [
     { level: 1, sets: 3, targetReps: [10, 10], restSeconds: 60, tempo: '3-1-X', unilateralNote: 'per leg' },
@@ -322,11 +266,6 @@ const LEVELS = {
     { level: 1, sets: 4, targetReps: [20, 20], restSeconds: 45, tempo: '3-1-X' },
     { level: 2, sets: 4, targetReps: [25, 25], restSeconds: 45, tempo: '3-1-X' },
     { level: 3, sets: 4, targetReps: [25, 25], restSeconds: 30, tempo: '3-1-X' },
-  ],
-  'db-thrusters': [
-    { level: 1, sets: 3, targetReps: [10, 10], restSeconds: 60, tempo: '3-1-X' },
-    { level: 2, sets: 3, targetReps: [12, 12], restSeconds: 60, tempo: '3-1-X' },
-    { level: 3, sets: 4, targetReps: [12, 12], restSeconds: 45, tempo: '3-1-X' },
   ],
 };
 
@@ -377,21 +316,11 @@ const WORKOUT_BLUEPRINTS = {
       {
         kind: 'strength',
         exerciseIds: [
+          'pushups',
           'db-floor-press',
-          'feet-elevated-pushups',
           'db-shoulder-press',
           'lateral-raises',
-          'db-squeeze-press',
-          'overhead-tri-extension',
-        ],
-      },
-      {
-        kind: 'finisher',
-        name: 'Push Finisher',
-        rounds: 3,
-        phases: [
-          { type: 'reps',  label: 'DB THRUSTERS', reps: 10, intensity: 'strength' },
-          { type: 'timed', label: 'SKIP',         duration: 45, intensity: 'skip' },
+          'chair-dips',
         ],
       },
     ],
@@ -407,18 +336,9 @@ const WORKOUT_BLUEPRINTS = {
         exerciseIds: [
           'one-arm-row',
           'bent-over-row',
-          'romanian-deadlift',
           'rear-delt-raises',
+          'bicep-curls',
           'hammer-curls',
-          'alt-db-curls',
-        ],
-      },
-      {
-        kind: 'finisher',
-        name: 'Pull Finisher',
-        rounds: 3,
-        phases: [
-          { type: 'timed', label: 'FARMER CARRY', duration: 45, intensity: 'strength' },
         ],
       },
     ],
@@ -433,20 +353,9 @@ const WORKOUT_BLUEPRINTS = {
         kind: 'strength',
         exerciseIds: [
           'goblet-squat',
-          'bulgarian-split-squat',
           'romanian-deadlift',
           'walking-lunges',
           'calf-raises',
-          'db-thrusters',
-        ],
-      },
-      {
-        kind: 'finisher',
-        name: 'Legs Finisher',
-        rounds: 8,
-        phases: [
-          { type: 'timed', label: 'SKIP', duration: 45, intensity: 'skip' },
-          { type: 'timed', label: 'REST', duration: 15, intensity: 'rest' },
         ],
       },
     ],

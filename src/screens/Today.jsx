@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Settings as SettingsIcon } from 'lucide-react';
+import HeroWorkoutCard from '../components/HeroWorkoutCard.jsx';
+import WeeklyTargetRing from '../components/WeeklyTargetRing.jsx';
 import WorkoutCard from '../components/WorkoutCard.jsx';
 import PPLWorkoutCard from '../components/PPLWorkoutCard.jsx';
 import SessionListItem from '../components/SessionListItem.jsx';
@@ -9,6 +11,7 @@ import ExerciseProgressionBanner from '../components/ExerciseProgressionBanner.j
 import ProgramSwitcher from '../components/ProgramSwitcher.jsx';
 import { WORKOUT_TYPES } from '../lib/workouts.js';
 import { PPL_TYPES } from '../lib/workoutsPPL.js';
+import { suggestNextWorkout, weeklyProgress } from '../lib/analytics.js';
 import {
   dismissExerciseProgression,
   dismissProgression,
@@ -52,6 +55,15 @@ export default function Today({ toast }) {
     return sessions.filter((s) => (s.program || 'skip') === program).slice(0, 3);
   }, [sessions, program]);
 
+  const types = program === 'skip' ? WORKOUT_TYPES : PPL_TYPES;
+
+  const nextWorkout = useMemo(
+    () => suggestNextWorkout(sessions, program, types),
+    [sessions, program, types]
+  );
+
+  const week = useMemo(() => weeklyProgress(sessions), [sessions]);
+
   const totalSessions = sessions.length;
   const editionNumber = String(totalSessions + 1).padStart(3, '0');
 
@@ -87,6 +99,12 @@ export default function Today({ toast }) {
     refresh();
   }
 
+  // Filter the "or pick another" list so we don't repeat the hero card.
+  const otherTypes = useMemo(() => {
+    if (!nextWorkout) return types;
+    return types.filter((t) => t !== nextWorkout.type);
+  }, [types, nextWorkout]);
+
   return (
     <div className="min-h-full pt-safe pb-32">
       {/* ============== MASTHEAD ============== */}
@@ -99,15 +117,12 @@ export default function Today({ toast }) {
         <div className="hairline-strong mt-4" />
 
         <div className="mt-8 flex items-start justify-between gap-6">
-          <div className="crimson-rise">
+          <div className="crimson-rise flex-1 min-w-0">
             <div className="label-md text-ink-faint">{formatDateHeading()}</div>
             <h1 className="headline-xl mt-3">
               The <em className="italic font-light text-crimson">discipline</em>
               <br />of today.
             </h1>
-            <p className="mt-5 body-md text-ink-dim max-w-md">
-              A quiet ledger of effort. Choose your work, then let the room go silent.
-            </p>
           </div>
 
           <Link
@@ -117,6 +132,10 @@ export default function Today({ toast }) {
           >
             <SettingsIcon size={20} strokeWidth={1.4} />
           </Link>
+        </div>
+
+        <div className="mt-7">
+          <WeeklyTargetRing progress={week} />
         </div>
       </header>
 
@@ -157,17 +176,32 @@ export default function Today({ toast }) {
         )}
       </div>
 
-      {/* ============== WORKOUT FEATURES ============== */}
-      <section className="px-8 mt-10">
+      {/* ============== HERO (today's suggested) ============== */}
+      {nextWorkout ? (
+        <section className="px-8 mt-8">
+          <HeroWorkoutCard
+            program={program}
+            type={nextWorkout.type}
+            level={program === 'skip' ? (levels[nextWorkout.type] ?? 1) : undefined}
+            reason={nextWorkout.reason}
+            onStart={() => startWorkout(nextWorkout.type, program)}
+          />
+        </section>
+      ) : null}
+
+      {/* ============== OTHER OPTIONS ============== */}
+      <section className="px-8 mt-12">
         <div className="flex items-baseline justify-between gap-6 mb-6">
-          <h2 className="headline-md">Selections</h2>
+          <h2 className="headline-md">
+            {nextWorkout ? 'Or pick another' : 'Selections'}
+          </h2>
           <span className="font-mono text-[11px] tracking-[0.2em] text-ink-faint tabular">
-            {(program === 'skip' ? WORKOUT_TYPES : PPL_TYPES).length.toString().padStart(2, '0')}&nbsp;/&nbsp;FEATURES
+            {otherTypes.length.toString().padStart(2, '0')}&nbsp;/&nbsp;{nextWorkout ? 'ALT' : 'FEATURES'}
           </span>
         </div>
         <div className="space-y-px bg-hairline">
           {program === 'skip'
-            ? WORKOUT_TYPES.map((type, i) => (
+            ? otherTypes.map((type, i) => (
                 <WorkoutCard
                   key={type}
                   type={type}
@@ -176,7 +210,7 @@ export default function Today({ toast }) {
                   onClick={() => startWorkout(type, 'skip')}
                 />
               ))
-            : PPL_TYPES.map((type, i) => (
+            : otherTypes.map((type, i) => (
                 <PPLWorkoutCard
                   key={type}
                   type={type}
