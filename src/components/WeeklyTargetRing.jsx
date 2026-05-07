@@ -3,7 +3,7 @@
 // not a trophy case.
 
 export default function WeeklyTargetRing({ progress, size = 64 }) {
-  const { completed, target, percent, streak } = progress;
+  const { completed, target, percent } = progress;
   const stroke = 2;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
@@ -52,11 +52,6 @@ export default function WeeklyTargetRing({ progress, size = 64 }) {
             ? 'The page is blank.'
             : `${target - completed} to go.`}
         </div>
-        {streak > 0 ? (
-          <div className="mt-1 label-md text-crimson tabular">
-            ◆&nbsp;&nbsp;{streak}&nbsp;wk&nbsp;streak
-          </div>
-        ) : null}
       </div>
     </div>
   );

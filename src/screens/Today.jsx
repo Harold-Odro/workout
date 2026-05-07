@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Settings as SettingsIcon } from 'lucide-react';
 import HeroWorkoutCard from '../components/HeroWorkoutCard.jsx';
+import StreakSlab from '../components/StreakSlab.jsx';
 import WeeklyTargetRing from '../components/WeeklyTargetRing.jsx';
 import WorkoutCard from '../components/WorkoutCard.jsx';
 import PPLWorkoutCard from '../components/PPLWorkoutCard.jsx';
@@ -11,7 +12,7 @@ import ExerciseProgressionBanner from '../components/ExerciseProgressionBanner.j
 import ProgramSwitcher from '../components/ProgramSwitcher.jsx';
 import { WORKOUT_TYPES } from '../lib/workouts.js';
 import { PPL_TYPES } from '../lib/workoutsPPL.js';
-import { suggestNextWorkout, weeklyProgress } from '../lib/analytics.js';
+import { computeScheduledStreak, suggestNextWorkout, weeklyProgress } from '../lib/analytics.js';
 import {
   dismissExerciseProgression,
   dismissProgression,
@@ -73,6 +74,7 @@ export default function Today({ toast }) {
   );
 
   const week = useMemo(() => weeklyProgress(sessions), [sessions]);
+  const streak = useMemo(() => computeScheduledStreak(sessions), [sessions]);
 
   const totalSessions = sessions.length;
   const editionNumber = String(totalSessions + 1).padStart(3, '0');
@@ -149,8 +151,11 @@ export default function Today({ toast }) {
         </div>
       </header>
 
+      {/* ============== STREAK ============== */}
+      {program === 'ppl' ? <StreakSlab streak={streak} /> : null}
+
       {/* ============== PROGRAM SWITCH ============== */}
-      <div className="px-8">
+      <div className="px-8 mt-8">
         <div className="flex items-center justify-between gap-6">
           <span className="label-md text-ink-faint">Program</span>
           <span className="hairline flex-1" />

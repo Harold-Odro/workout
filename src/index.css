@@ -207,6 +207,12 @@ body {
 .heartbeat    { animation: crimsonHeartbeat 1.6s ease-in-out infinite; }
 .bar-wipe     { animation: barWipe 800ms cubic-bezier(.2,.7,.2,1) both; transform-origin: left; }
 
+@keyframes streakPulse {
+  0%, 100% { box-shadow: inset 0 0 0 0 rgba(255,82,93,0); }
+  50%      { box-shadow: inset 0 -2px 0 0 rgba(255,82,93,0.55); }
+}
+.streak-urgent { animation: streakPulse 2.4s ease-in-out infinite; }
+
 .progress-ring-fg {
   transition: stroke-dashoffset 120ms linear;
 }

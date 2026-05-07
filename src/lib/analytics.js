@@ -146,6 +146,97 @@ export function weeklyProgress(sessions, target = DEFAULT_WEEKLY_TARGET) {
   };
 }
 
+// ---------- Scheduled streak (PPL daily on-schedule) ----------
+//
+// Habit-forcing streak: counts consecutive scheduled weekdays held without
+// missing one. Rest days (Sat/Sun under PPL_WEEKLY_SCHEDULE) pass through —
+// they don't add to or break the streak.
+//
+// A scheduled day is "held" if a non-skipped PPL session of *exactly the
+// scheduled type* was logged that calendar day.
+//
+// Today is special: it's not yet a "miss" — it becomes one only at midnight
+// if still unheld. So today is reported separately as `scheduledToday` and
+// `completedToday`; the day count reflects past held days only.
+//
+// Returns:
+//   {
+//     days,              // count of past consecutive scheduled days held
+//     scheduledToday,    // PPL type scheduled today, or null on rest days
+//     completedToday,    // boolean — was today's scheduled work logged?
+//     atRisk,            // boolean — scheduled today, not yet completed
+//     hoursRemaining,    // hours until midnight if atRisk, else null
+//     brokenAt,          // if the most recent day broke a streak, the count it broke at; else null
+//   }
+export function computeScheduledStreak(sessions, now = new Date()) {
+  const nonSkipped = nonSkippedSessions(sessions).filter(
+    (s) => (s.program || 'skip') === 'ppl'
+  );
+
+  const heldOn = (day, type) =>
+    nonSkipped.some((s) => s.type === type && isSameDay(sessionDate(s), day));
+
+  const todayType = scheduledPPLForDay(now.getDay());
+  const completedToday = todayType ? heldOn(now, todayType) : false;
+  const atRisk = !!todayType && !completedToday;
+
+  let hoursRemaining = null;
+  if (atRisk) {
+    const endOfToday = new Date(now);
+    endOfToday.setHours(23, 59, 59, 999);
+    hoursRemaining = Math.max(0, Math.ceil((endOfToday - now) / 3_600_000));
+  }
+
+  // Walk backwards day-by-day starting from yesterday. Skip rest days.
+  // Stop on the first scheduled day that wasn't held.
+  let days = 0;
+  let cursor = addDays(now, -1);
+  // Hard cap to avoid runaway loop on empty data.
+  for (let i = 0; i < 400; i++) {
+    const type = scheduledPPLForDay(cursor.getDay());
+    if (type === null) {
+      cursor = addDays(cursor, -1);
+      continue;
+    }
+    if (heldOn(cursor, type)) {
+      days += 1;
+      cursor = addDays(cursor, -1);
+      continue;
+    }
+    break;
+  }
+
+  // brokenAt: did the most recent *missed* scheduled day end a streak ≥ 1?
+  // Only relevant when days === 0 and the user has prior history.
+  let brokenAt = null;
+  if (days === 0 && nonSkipped.length > 0) {
+    // Walk back through scheduled days until the first held day; count what
+    // came before that as the prior streak length.
+    let priorCursor = addDays(now, -1);
+    let foundMiss = false;
+    for (let i = 0; i < 60 && !foundMiss; i++) {
+      const t = scheduledPPLForDay(priorCursor.getDay());
+      if (t === null) { priorCursor = addDays(priorCursor, -1); continue; }
+      if (!heldOn(priorCursor, t)) { foundMiss = true; break; }
+      priorCursor = addDays(priorCursor, -1);
+    }
+    if (foundMiss) {
+      // Count consecutive held scheduled days *before* that miss.
+      let n = 0;
+      let c = addDays(priorCursor, -1);
+      for (let i = 0; i < 400; i++) {
+        const t = scheduledPPLForDay(c.getDay());
+        if (t === null) { c = addDays(c, -1); continue; }
+        if (heldOn(c, t)) { n += 1; c = addDays(c, -1); continue; }
+        break;
+      }
+      if (n > 0) brokenAt = n;
+    }
+  }
+
+  return { days, scheduledToday: todayType, completedToday, atRisk, hoursRemaining, brokenAt };
+}
+
 // ---------- Next-workout suggestion ----------
 
 // Pick what the user should probably do today. Heuristic, not prescription —
