@@ -9,6 +9,9 @@ import {
   differenceInCalendarDays,
 } from 'date-fns';
 import { getWorkout, WORKOUT_TYPES } from './workouts.js';
+import { scheduledPPLForDay } from './workoutsPPL.js';
+
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 const SKIP_TYPES = new Set(WORKOUT_TYPES);
 
@@ -28,6 +31,10 @@ export function sessionDate(s) {
 
 export function nonSkippedSessions(sessions) {
   return sessions.filter((s) => !s.skipped);
+}
+
+function capitalize(s) {
+  return s ? s[0].toUpperCase() + s.slice(1) : s;
 }
 
 function plannedWorkout(type) {
@@ -173,9 +180,23 @@ export function suggestNextWorkout(sessions, program, types) {
     lastSeen.set(s.type, differenceInCalendarDays(today, sessionDate(s)));
   }
 
-  // PPL rotation: if we did Push yesterday, suggest Pull, etc.
+  // PPL: honor the weekly schedule first (Mon=Push, Tue=Pull, …). Only fall
+  // back to recency-based rotation on rest days or when the scheduled day was
+  // already completed today.
   if (program === 'ppl') {
     const rotation = types.filter((t) => t !== 'circuit');
+    const dayName = DAY_NAMES[today.getDay()];
+    const scheduled = scheduledPPLForDay(today.getDay());
+
+    if (scheduled && rotation.includes(scheduled)) {
+      const doneToday = done.some(
+        (s) => s.type === scheduled && isSameDay(sessionDate(s), today)
+      );
+      if (!doneToday) {
+        return { type: scheduled, reason: `${dayName} — ${capitalize(scheduled)} day` };
+      }
+    }
+
     const mostRecent = done[0];
     const daysSinceLast = differenceInCalendarDays(today, sessionDate(mostRecent));
 

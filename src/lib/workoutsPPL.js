@@ -19,6 +19,25 @@ export const PPL_META = {
   circuit: { id: 'circuit', name: 'Weekly Definition Circuit', tagline: 'Optional 5-round full-body circuit' },
 };
 
+// Weekly schedule for the home Push/Pull/Legs plan. Index 0 = Sunday … 6 = Saturday
+// (matches JS Date.getDay()). null = rest / optional / no strength workout.
+// Mon Push, Tue Pull, Wed Legs, Thu Push, Fri Pull, Sat optional, Sun rest.
+export const PPL_WEEKLY_SCHEDULE = [
+  null,   // Sun — rest
+  'push', // Mon
+  'pull', // Tue
+  'legs', // Wed
+  'push', // Thu
+  'pull', // Fri
+  null,   // Sat — optional cardio/mobility
+];
+
+// Returns the scheduled PPL type for a given JS day-of-week (0=Sun..6=Sat),
+// or null if that day is rest / optional.
+export function scheduledPPLForDay(dayOfWeek) {
+  return PPL_WEEKLY_SCHEDULE[dayOfWeek] ?? null;
+}
+
 // ---------- Exercise definitions (metadata shared across levels) ----------
 //
 // Fields that don't change with level live here. Fields that DO change with

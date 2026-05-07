@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Settings as SettingsIcon } from 'lucide-react';
 import HeroWorkoutCard from '../components/HeroWorkoutCard.jsx';
 import WeeklyTargetRing from '../components/WeeklyTargetRing.jsx';
@@ -33,13 +33,23 @@ import { unlockAudio } from '../lib/audio.js';
 
 export default function Today({ toast }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [sessions, setSessions] = useState([]);
   const [levels, setLevels] = useState(() => getLevels());
   const [program, setProgram] = useState(() => getActiveProgram());
   const [suggestion, setSuggestion] = useState(null);
   const [pplSuggestion, setPplSuggestion] = useState(null);
 
-  useEffect(() => { refresh(); }, []);
+  // Refresh on every navigation back to Today (location.key changes per nav,
+  // even with `replace`) and when the tab becomes visible again.
+  useEffect(() => { refresh(); }, [location.key]);
+  useEffect(() => {
+    function onVisible() {
+      if (document.visibilityState === 'visible') refresh();
+    }
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, []);
 
   function refresh() {
     setSessions(getSessions());
