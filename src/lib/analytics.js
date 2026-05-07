@@ -237,6 +237,103 @@ export function computeScheduledStreak(sessions, now = new Date()) {
   return { days, scheduledToday: todayType, completedToday, atRisk, hoursRemaining, brokenAt };
 }
 
+// ---------- Daily-any streak (skip program) ----------
+//
+// Habit-forcing streak with no schedule: counts consecutive calendar days
+// with at least one non-skipped session of the given program. Today is
+// "at risk" until midnight if no session was logged.
+export function computeDailyAnyStreak(sessions, program = 'skip', now = new Date()) {
+  const filtered = nonSkippedSessions(sessions).filter(
+    (s) => (s.program || 'skip') === program
+  );
+  const heldOn = (day) => filtered.some((s) => isSameDay(sessionDate(s), day));
+
+  const completedToday = heldOn(now);
+  const atRisk = !completedToday;
+
+  let hoursRemaining = null;
+  if (atRisk) {
+    const endOfToday = new Date(now);
+    endOfToday.setHours(23, 59, 59, 999);
+    hoursRemaining = Math.max(0, Math.ceil((endOfToday - now) / 3_600_000));
+  }
+
+  let days = 0;
+  let cursor = addDays(now, -1);
+  for (let i = 0; i < 400; i++) {
+    if (heldOn(cursor)) {
+      days += 1;
+      cursor = addDays(cursor, -1);
+      continue;
+    }
+    break;
+  }
+
+  let brokenAt = null;
+  if (days === 0 && filtered.length > 0) {
+    let n = 0;
+    let c = addDays(now, -2); // skip yesterday's miss, count what came before
+    for (let i = 0; i < 400; i++) {
+      if (heldOn(c)) { n += 1; c = addDays(c, -1); continue; }
+      break;
+    }
+    if (n > 0) brokenAt = n;
+  }
+
+  return {
+    days,
+    scheduledToday: 'any', // sentinel — every day is scheduled in this mode
+    completedToday,
+    atRisk,
+    hoursRemaining,
+    brokenAt,
+    mode: 'daily-any',
+  };
+}
+
+// ---------- 7-day calendar dots ----------
+//
+// Returns an array of 7 entries, oldest → newest (today is last). Each entry:
+//   { date, dayLetter, status }
+// status ∈ 'held' | 'missed' | 'rest' | 'today-held' | 'today-pending'
+//
+// For PPL: rest = scheduled null. held = scheduled type was logged that day.
+// For skip: rest never returned; missed = no session that day.
+export function computeRecentDots(sessions, program, now = new Date()) {
+  const dayLetters = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  const filtered = nonSkippedSessions(sessions).filter(
+    (s) => (s.program || 'skip') === program
+  );
+  const dots = [];
+  for (let i = 6; i >= 0; i--) {
+    const day = addDays(now, -i);
+    const isToday = i === 0;
+    let status = 'missed';
+    if (program === 'ppl') {
+      const scheduled = scheduledPPLForDay(day.getDay());
+      if (scheduled === null) {
+        status = 'rest';
+      } else {
+        const held = filtered.some(
+          (s) => s.type === scheduled && isSameDay(sessionDate(s), day)
+        );
+        if (isToday) status = held ? 'today-held' : 'today-pending';
+        else status = held ? 'held' : 'missed';
+      }
+    } else {
+      const held = filtered.some((s) => isSameDay(sessionDate(s), day));
+      if (isToday) status = held ? 'today-held' : 'today-pending';
+      else status = held ? 'held' : 'missed';
+    }
+    dots.push({
+      date: day,
+      dayLetter: dayLetters[day.getDay()],
+      status,
+    });
+  }
+  return dots;
+}
+
 // ---------- Next-workout suggestion ----------
 
 // Pick what the user should probably do today. Heuristic, not prescription —

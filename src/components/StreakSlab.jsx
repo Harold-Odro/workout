@@ -3,11 +3,16 @@ import { PPL_META } from '../lib/workoutsPPL.js';
 // Heavy editorial streak block. Sits high on Today — meant to be the first
 // thing the eye hits after the headline. Stakes-forward: late in the day,
 // when today's scheduled session is unheld, the copy escalates.
+//
+// Works in two modes:
+//   mode='daily-any'  — skip program. Any session that day holds the streak.
+//   else (PPL)         — scheduledToday is the type required to hold today.
 
 export default function StreakSlab({ streak }) {
-  const { days, scheduledToday, completedToday, atRisk, hoursRemaining, brokenAt } = streak;
+  const { days, scheduledToday, completedToday, atRisk, hoursRemaining, brokenAt, mode } = streak;
+  const isDailyAny = mode === 'daily-any';
 
-  const todayName = scheduledToday ? PPL_META[scheduledToday]?.name : null;
+  const todayName = !isDailyAny && scheduledToday ? PPL_META[scheduledToday]?.name : null;
 
   // Choose the stakes line.
   let stakes;
@@ -16,12 +21,17 @@ export default function StreakSlab({ streak }) {
     stakes = `The streak broke at ${brokenAt}. Begin again.`;
     urgent = true;
   } else if (!scheduledToday) {
-    stakes = `${days === 0 ? 'No streak yet.' : 'The streak rests with you.'}`;
+    // PPL rest day only.
+    stakes = days === 0 ? 'No streak yet.' : 'The streak rests with you.';
   } else if (completedToday) {
     stakes = `Today is held. Day ${days + 1} starts tomorrow.`;
   } else if (atRisk && hoursRemaining !== null && hoursRemaining <= 4) {
     stakes = `${hoursRemaining} hour${hoursRemaining === 1 ? '' : 's'} left. Don't break it.`;
     urgent = true;
+  } else if (atRisk && isDailyAny) {
+    stakes = days === 0
+      ? 'No session yet today. The streak begins tonight.'
+      : 'No session yet today. The streak ends at midnight.';
   } else if (atRisk) {
     stakes = `Today is ${todayName}. The streak ends if it goes unfinished.`;
   } else {

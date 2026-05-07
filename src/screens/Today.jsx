@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Settings as SettingsIcon } from 'lucide-react';
 import HeroWorkoutCard from '../components/HeroWorkoutCard.jsx';
+import RecentDotRow from '../components/RecentDotRow.jsx';
 import StreakSlab from '../components/StreakSlab.jsx';
 import WeeklyTargetRing from '../components/WeeklyTargetRing.jsx';
 import WorkoutCard from '../components/WorkoutCard.jsx';
@@ -12,7 +13,18 @@ import ExerciseProgressionBanner from '../components/ExerciseProgressionBanner.j
 import ProgramSwitcher from '../components/ProgramSwitcher.jsx';
 import { WORKOUT_TYPES } from '../lib/workouts.js';
 import { PPL_TYPES } from '../lib/workoutsPPL.js';
-import { computeScheduledStreak, suggestNextWorkout, weeklyProgress } from '../lib/analytics.js';
+import {
+  computeDailyAnyStreak,
+  computeRecentDots,
+  computeScheduledStreak,
+  suggestNextWorkout,
+  weeklyProgress,
+} from '../lib/analytics.js';
+import {
+  getStreakNotificationPermission,
+  requestStreakNotificationPermission,
+  scheduleAtRiskNotification,
+} from '../lib/streakNotifications.js';
 import {
   dismissExerciseProgression,
   dismissProgression,
@@ -74,7 +86,30 @@ export default function Today({ toast }) {
   );
 
   const week = useMemo(() => weeklyProgress(sessions), [sessions]);
-  const streak = useMemo(() => computeScheduledStreak(sessions), [sessions]);
+  const streak = useMemo(
+    () =>
+      program === 'ppl'
+        ? computeScheduledStreak(sessions)
+        : computeDailyAnyStreak(sessions, program),
+    [sessions, program]
+  );
+  const dots = useMemo(() => computeRecentDots(sessions, program), [sessions, program]);
+  const [notifPermission, setNotifPermission] = useState(() =>
+    getStreakNotificationPermission()
+  );
+
+  // Schedule the 6pm at-risk notification for the active program. Reschedules
+  // when sessions or program change (so a just-completed workout cancels the
+  // pending notification — fireIfEligible will see the held state).
+  useEffect(() => {
+    const cleanup = scheduleAtRiskNotification(getSessions, getActiveProgram);
+    return cleanup;
+  }, [sessions, program]);
+
+  async function enableNotifications() {
+    const result = await requestStreakNotificationPermission();
+    setNotifPermission(result);
+  }
 
   const totalSessions = sessions.length;
   const editionNumber = String(totalSessions + 1).padStart(3, '0');
@@ -152,7 +187,20 @@ export default function Today({ toast }) {
       </header>
 
       {/* ============== STREAK ============== */}
-      {program === 'ppl' ? <StreakSlab streak={streak} /> : null}
+      <div className="px-8 mt-2">
+        <RecentDotRow dots={dots} />
+      </div>
+      <StreakSlab streak={streak} />
+      {notifPermission === 'default' && streak.atRisk ? (
+        <div className="px-8 mt-3">
+          <button
+            onClick={enableNotifications}
+            className="w-full text-left px-4 py-3 border border-hairline hover:border-crimson transition-colors label-md text-ink-faint hover:text-crimson"
+          >
+            ◆&nbsp;&nbsp;Get a 6 PM nudge if the streak is still at risk →
+          </button>
+        </div>
+      ) : null}
 
       {/* ============== PROGRAM SWITCH ============== */}
       <div className="px-8 mt-8">
